@@ -27,83 +27,21 @@ const safetySettings = [
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings });
 
-const geminiPrompts = [
-  [
-    'Tell me a dad joke.',
-    'Tell me a joke about food.',
-    'Tell me a joke.',
-    'Tell me a joke relating to the Internet.',
-    'Tell me a joke related to addiction recovery.',
-    'Tell me a joke about the chicken crossing the road.'
-  ],
-  [
-    'Give me a quote from Brene Brown.',
-    'Give me a quote from Tony Robbins.',
-    'Give me a quote from Dr. Gabor Maté.',
-    'Give me a quote from Bradley Cooper.',
-    'Give me a quote from Russel Brand.',
-    'Give me a quote from Robert Downey Jr.',
-    'Give me a quote from Demi Lovato.'
-  ],
-  [
-    'Give me a quote from the book The Four Agreements.',
-    'Give me a quote from the book The Power of Now.',
-    'Give me a quote from the book The Alchemist.',
-    'Give me a quote from the book Man\s Search for Meaning.',
-    'Give me a quote from the book The Subtle Art of Not Giving a F*ck.',
-    'Give me a quote from the book The 7 Habits of Highly Effective People.',
-    'Give me a quote from the book The Untethered Soul.',
-  ],
-  [
-    'Tell me a knock-knock joke.',
-    'Tell me a joke about a dog.',
-    'Tell me a witty joke.',
-    'Tell me a joke about a car.',
-    'Write me a brief stand-up comedy bit.'
-  ],
-  [
-    'Give me a brief reason why I should stay clean and sober.',
-    'Give me a brief summary of a benefit I get from staying clean and sober.',
-    'Name a way my life will improve if I stay clean and sober.',
-    'Tell me what I can do when struggling with thoughts of using an addictive substance.',
-    'Tell me about one thing I can do to assure my recovery from addiction.'
-  ],
-  [
-    'Give me a quote from Stoic philosophy.',
-    'Give me a quote from Buddhist principles.',
-    'Give me a quote about finding harmony.',
-    'Give me a quote about striking balance in life.',
-    'Give me a quote about perseverance.',
-    'Give me a quote about humility.',
-    'Give me a philosophic quote.'
-  ],
-  [
-    'Give me a quote from Martin Luther King, Jr.',
-    'Give me a quote from Nelson Mandela.',
-    'Give me a quote from Jim Carrey.',
-    'Give me a quote from Robin Williams.',
-    'Give me a quote from Winston Churchill.',
-    'Give me a quote from Mahatma Gandhi.',
-    'Give me a quote from Albert Einstein.',
-    'Give me a quote from FDR.'
-  ]
+const jokesFeed = [
+  `What do you call a boomerang that doesn't come back? 
+  A stick.`
+]
+const quotesFeed = [
+  `“Rock bottom became the solid foundation on which I rebuilt my life.” – J.K. Rowling`
+]
+const philosophyFeed = [
+  `Those who cling to perceptions and views wander the world offending people.`
 ]
 
 async function getGeminiOutput(prompt) {
   const result = await model.generateContent(prompt);
   const response = await result.response;
   return response.text();
-}
-
-let geminiOutputs = [];
-async function getGeminiOutputs() {
-  let updatedOutputs = []
-  for (let promptList of geminiPrompts) {
-    const prompt = promptList[Math.floor(Math.random() * promptList.length)]
-    const output = await getGeminiOutput(prompt)
-    updatedOutputs.push(output)
-  }
-  geminiOutputs = updatedOutputs
 }
 
 let goodNewsArticles = [];
@@ -124,13 +62,7 @@ async function getGoodNewsFeed() {
   goodNewsArticles = updatedArticles
 }
 
-getGeminiOutputs()
 getGoodNewsFeed()
-
-const fifteenMinutes = 1000 * 60 * 15
-setInterval(function() {
-  getGeminiOutputs()
-}, fifteenMinutes)
 
 const oneDay = 1000 * 60 * 60 * 24
 setInterval(function() {
@@ -147,8 +79,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/static/index.html'));
 });
 
-app.get('/gemini', (req, res) => {
-  res.send(geminiOutputs)
+app.get('/feed', (req, res) => {
+  const feed = [
+    jokesFeed[Math.floor(Math.random() * jokesFeed.length)],
+    quotesFeed[Math.floor(Math.random() * jokesFeed.length)],
+    philosophyFeed[Math.floor(Math.random() * jokesFeed.length)]
+  ]
+  res.send(feed)
 });
 
 app.get('/gnn', (req, res) => {

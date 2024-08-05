@@ -6,50 +6,14 @@
     <h3 id="page-heading">Good Energeez, Inc.</h3>
     <p class="title">&#8595; Scroll down to see more &#8595;</p>
     <p class="title">Enjoy &#128522;</p>
-    <div class="gemini">
-      <p></p>
-    </div>
-    <div class="gemini">
-      <p></p>
-    </div>
-    <div class="gnn">
-      <h5></h5>
-      <h6></h6>
-      <p></p>
-      <a>Read more</a>
-    </div>
-    <div class="gemini">
-      <p></p>
-    </div>
-    <div class="gemini">
-      <p></p>
-    </div>
-    <div class="gnn">
-      <h5></h5>
-      <h6></h6>
-      <p></p>
-      <a>Read more</a>
-    </div>
-    <div class="gemini">
-      <p></p>
-    </div>
-    <div class="gemini">
-      <p></p>
-    </div>
-    <div class="gnn">
-      <h5></h5>
-      <h6></h6>
-      <p></p>
-      <a>Read more</a>
-    </div>
-    <div class="gemini">
-      <p></p>
-    </div>
     
     <div id="question-form">
+      <div id="question-validation-error">
+        Provide a question and select role.
+      </div>
       <div>
         <label for="question-input">Ask a question about recovery:</label>
-        <textarea id="question-input" rows="2"></textarea>
+        <textarea id="question-input" rows="3"></textarea>
       </div>
       <div>
         <label>Answer the question as a:</label>
@@ -69,9 +33,47 @@
       </div>
     </div>
     
+    <div class="feed">
+      <p></p>
+    </div>
+    <div class="feed">
+      <p></p>
+    </div>
+    <div class="feed">
+      <p></p>
+    </div>
+    <div class="gnn">
+      <h5></h5>
+      <h6></h6>
+      <p></p>
+      <a>Read more</a>
+    </div>
+    <div class="gnn">
+      <h5></h5>
+      <h6></h6>
+      <p></p>
+      <a>Read more</a>
+    </div>
+    <div class="gnn">
+      <h5></h5>
+      <h6></h6>
+      <p></p>
+      <a>Read more</a>
+    </div>
+    
+    <dialog id="answer-dialog">
+      <p id="answer-dialog-title"><strong>ANSWER:</strong></p>
+      <p id="answer-text"></p>
+      <form method="dialog">
+        <button>OK</button>
+      </form>
+    </dialog>
+    <div id="dialog-overlay">
+    </div>
+    
     <div id="footer">
       <p><strong>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a>.</strong></p>
-      <p><strong>Note:&nbsp;</strong>Text is updated every 5 minutes (jokes, quotes, etc). Articles are updated at least daily.</p>
+      <p><strong>Note:&nbsp;</strong>Articles are updated at least daily.</p>
       <p><strong>What's this about?&nbsp;</strong>Good Energeez is meant to be a place that offers uplifting spirit for people when they feel drained and need a quick boost. This site is especially geared toward those who are recovering from addiction &#9829;</p>
     </div>
     
@@ -80,12 +82,12 @@
         font-family: Sans-Serif;
       }
     
-      .gemini, .gnn {
+      .feed, .gnn {
         margin: 2vw;
         padding: 2vw;
       }
       
-      .gemini {
+      .feed {
         font-size: 6vw;
       }
       
@@ -109,6 +111,7 @@
       #footer {
         font-size: 4vw;
         padding-left: 2vw;
+        margin-top: 2vw;
         border-top: vw solid #ddd;
         border-top: 0.5vw solid #ddd;
       }
@@ -120,22 +123,28 @@
       }
       
       #question-form {
-        padding: 2vw
+        margin-top: 2vw;
+        padding: 2vw;
         border-top: 0.5vw solid #ddd;
       }
       
       #question-form label {
         font-size: 3vw;
+        font-weight: bold;
       }
       
       #question-form textarea {
         width: 90vw;
         font-size: 3vw;
+        height: 20vw;
+        border: 0.25vw solid #ddd;
+        border-radius: 0.1vw;
       }
       
       .answer-as {
         width: 40vw;
-        font-size: 3vw;
+        font-size: 4vw;
+        padding: 2vw;
         border: 1px solid #ddd;
         border-radius: 1vw;
         background-color: #fff;
@@ -143,10 +152,49 @@
       }
       
       #btn-submit-question {
-        font-size: 3.5vw;
+        margin-top: 2vw;
+        font-size: 5vw;
+        padding: 2vw;
+        font-weight: bold;
         background-color: #000088;
         color: #fff;
         border: 1px solid #000055;
+      }
+      
+      #question-validation-error {
+        display: none;
+        font-size: 4vw;
+        color: #cc3333;
+        padding-bottom: 2vw;
+      }
+      
+      #answer-dialog {
+        z-index: 20;
+        top: 10vh;
+        width: 80vw;
+        padding-left: 4vw;
+      }
+      
+      #answer-dialog-title {
+        margin-top: 2vw;
+      }
+      
+      #answer-dialog p {
+        font-size: 5vw;
+      }
+      #answer-dialog button {
+        font-size: 6vw;
+      }
+      
+      #dialog-overlay {
+        display: none;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 10;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 300vh;
       }
     </style>
     
@@ -157,7 +205,7 @@
         '#CC99FF',
         '#dfFFdf',
         '#aaFF99',
-        '#FFccaa',
+    //    '#FFccaa',
         '#FFFFbb',
         '#CCCCFF',
         '#Faa9a9',
@@ -180,8 +228,8 @@
         }
       }
       
-      function getAiPromptResults() {
-        fetchData('gemini', (element, result) => {
+      function getFeedResults() {
+        fetchData('feed', (element, result) => {
           element.querySelector('p').textContent = result
         })
       }
@@ -216,13 +264,50 @@
         }
       }
       
+      function addAnswerText(index, answer, answerText) {
+        const rand = Math.random() * 3 + 1
+        let nextIndex = index + rand
+        nextIndex = Math.min(nextIndex, answer.length - 1)
+        const length = nextIndex - index + 1 
+        answerText.textContent += answer.substring(index, length)
+        return index + length
+      }
+      
       function submitQuestion() {
         const question = document.getElementById('question-input').value
-        
+        const validation = document.getElementById('question-validation-error')
+        if (question && role) {
+          validation.style.display = 'none'
+          document.getElementById('').textContent = 'Please wait...'
+          const input = document.getElementById('')
+          input.setAttribute('disabled', true)
+          input.value = 'Generating answer...'
+          fetch('/question', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: { question, role }
+          })
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('dialog-overlay').style.display = 'block'
+            const answerText = document.getElementById('answer-text')
+            answerText.textContent = ''
+            document.getElementById('answer-dialog').setAttribute('open', true)
+            let index = 0
+            while (index < data.answer.length - 1) {
+              const timeout = Math.random() * 100 + 50
+              setTimeout(function() {
+                index = addAnswerText(index, answer, answerText)
+              }, timeout)
+            }
+          })
+        } else {
+          validation.style.display = 'block'
+        }
       }
       
       document.addEventListener("DOMContentLoaded", _ => {
-        getAiPromptResults()
+        getFeedResults()
         getGoodNews()
       })
     </script>
