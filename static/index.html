@@ -29,7 +29,7 @@
         </div>
       </div>
       <div>
-        <button id="btn-submit-question" type="button" onclick="submitQuestion()">Ask</button>
+        <button id="btn-submit-question" class="btn-submit" type="button" onclick="submitQuestion()">Ask</button>
       </div>
     </div>
     
@@ -65,7 +65,7 @@
       <p id="answer-dialog-title"><strong>ANSWER:</strong></p>
       <p id="answer-text"></p>
       <form method="dialog">
-        <button onclick="dialogClosed()">OK</button>
+        <button id="dialog-okay" class="btn-submit" onclick="dialogClosed()">OK</button>
       </form>
     </dialog>
     <div id="dialog-overlay">
@@ -154,11 +154,6 @@
       #btn-submit-question {
         margin-top: 2vw;
         font-size: 5vw;
-        padding: 2vw;
-        font-weight: bold;
-        background-color: #000088;
-        color: #fff;
-        border: 1px solid #000055;
       }
       
       #question-validation-error {
@@ -182,8 +177,14 @@
       #answer-dialog p {
         font-size: 5vw;
       }
-      #answer-dialog button {
+      
+      .btn-submit {
         font-size: 6vw;
+        padding: 2vw;
+        font-weight: bold;
+        background-color: #000088;
+        color: #fff;
+        border: 1px solid #000055;
       }
       
       #dialog-overlay {
@@ -296,6 +297,7 @@
           })
           .then(res => res.json())
           .then(data => {
+            clearInterval(submitInterval)
             document.getElementById('dialog-overlay').style.display = 'block'
             input.style.fontWeight = 'normal'
             input.value = ''

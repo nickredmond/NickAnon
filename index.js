@@ -29,13 +29,39 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettin
 
 const jokesFeed = [
   `What do you call a boomerang that doesn't come back? 
-  A stick.`
+  A stick.`,
+  `What do you call it when a prisoner takes his own mugshot?
+  A cellfie.`,
+  `What do you call a person with a briefcase in a tree?
+  Branch manager.`,
+  `What do you call blackbirds that stick together?
+  Vel-crows.`,
+  `What do you call a policeman in bed?
+  An undercover cop.`,
+  `Knock! Knock! Who’s there? Alaska. Alaska who? Alaska ‘nother person if you don’t know the answer!`,
+  `Knock! Knock! Who’s there? Yoda Lady. Yoda Lady who? Stop yodeling.`,
+  `Knock! Knock! Who’s there? Chickens. Chickens who? No, no! Chickens cluck, owls hoo.`,
+  `Knock! Knock! Who’s there? Nada. Nada who? Nada another knock-knock joke!`,
+  `Knock! Knock! Who’s there? Nanna. Nanna who? Nanna your business.`
 ]
 const quotesFeed = [
-  `“Rock bottom became the solid foundation on which I rebuilt my life.” – J.K. Rowling`
+  `“Rock bottom became the solid foundation on which I rebuilt my life.” – J.K. Rowling`,
+  `“Life is a series of relapses and recoveries.” – George Ade`,
+  `“The only person you are destined to become is the person you decide to be.” – Ralph Waldo Emerson`,
+  `“Remember that just because you hit bottom doesn’t mean you have to stay there.” – Robert Downey Jr.`,
+  `“Life is like riding a bicycle. To keep your balance, you must keep moving.” – Albert Einstein`,
+  `“What progress, you ask, have I made? I have begun to be a friend to myself.” – Hecato`,
+  `“What makes the desert beautiful is that somewhere it hides a well.” – Antoine de Saint-Exupery`,
+  `“The most common way people give up their power is by thinking they don’t have any.” – Alice Walker`,
+  `“In the midst of winter, I found there was, within me, an invincible summer. And that makes me happy. For it says that no matter how hard the world pushes against me, within me, there’s something stronger — something better, pushing right back.” – Albert Camus`,
+  `“Hardships often prepare ordinary people for an extraordinary destiny.”– C.S. Lewis`,
+  `“Every experience in your life is being orchestrated to teach you something you need to know to move forward.” – Brian Tracy`,
+  `“Every noble work is at first impossible.” – Thomas Carlyle`,
+  `“Don’t judge each day by the harvest you reap but by the seeds that you plant.” – Robert Louis Stevenson`
 ]
 const philosophyFeed = [
-  `Those who cling to perceptions and views wander the world offending people.`
+  `Those who cling to perceptions and views will wander the world offending people.`,
+  `One moment can change a day, one day can change a life, and one life can change the world.`
 ]
 
 async function getGeminiOutput(prompt) {
@@ -105,7 +131,7 @@ app.post('/question', (req, res) => {
       prompt += 'my closest friend and you have a brother in recovery from addiction, '
       break;
     case 'mother':
-      prompt += 'my mother and you are willing to help however she can but won\'t enable me, '
+      prompt += 'my mother and you are willing to help however you can but you won\'t enable me, '
       break;
   }
   prompt += `while you answer the following question: ${req.body.question}`
