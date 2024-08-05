@@ -1,0 +1,230 @@
+<html>
+  <head>
+    <title>NickAnon</title>
+  </head>
+  <body>
+    <h3 id="page-heading">Good Energeez, Inc.</h3>
+    <p class="title">&#8595; Scroll down to see more &#8595;</p>
+    <p class="title">Enjoy &#128522;</p>
+    <div class="gemini">
+      <p></p>
+    </div>
+    <div class="gemini">
+      <p></p>
+    </div>
+    <div class="gnn">
+      <h5></h5>
+      <h6></h6>
+      <p></p>
+      <a>Read more</a>
+    </div>
+    <div class="gemini">
+      <p></p>
+    </div>
+    <div class="gemini">
+      <p></p>
+    </div>
+    <div class="gnn">
+      <h5></h5>
+      <h6></h6>
+      <p></p>
+      <a>Read more</a>
+    </div>
+    <div class="gemini">
+      <p></p>
+    </div>
+    <div class="gemini">
+      <p></p>
+    </div>
+    <div class="gnn">
+      <h5></h5>
+      <h6></h6>
+      <p></p>
+      <a>Read more</a>
+    </div>
+    <div class="gemini">
+      <p></p>
+    </div>
+    
+    <div id="question-form">
+      <div>
+        <label for="question-input">Ask a question about recovery:</label>
+        <textarea id="question-input" rows="2"></textarea>
+      </div>
+      <div>
+        <label>Answer the question as a:</label>
+        <div>
+          <div>
+            <button type="button" class="answer-as" onclick="answerAs(this, 'researcher')">researcher</button>
+            <button type="button" class="answer-as" onclick="answerAs(this, 'therapist')">therapist</button>
+          </div>
+          <div>
+            <button type="button" class="answer-as" onclick="answerAs(this, 'mother')">mother</button>
+            <button type="button" class="answer-as" onclick="answerAs(this, 'friend')">friend</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button id="btn-submit-question" type="button" onclick="submitQuestion()">Ask</button>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <p><strong>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a>.</strong></p>
+      <p><strong>Note:&nbsp;</strong>Text is updated every 5 minutes (jokes, quotes, etc). Articles are updated at least daily.</p>
+      <p><strong>What's this about?&nbsp;</strong>Good Energeez is meant to be a place that offers uplifting spirit for people when they feel drained and need a quick boost. This site is especially geared toward those who are recovering from addiction &#9829;</p>
+    </div>
+    
+    <style>
+      body {
+        font-family: Sans-Serif;
+      }
+    
+      .gemini, .gnn {
+        margin: 2vw;
+        padding: 2vw;
+      }
+      
+      .gemini {
+        font-size: 6vw;
+      }
+      
+      .gnn {
+        font-size: 4vw;
+      }
+      .gnn h5 {
+        font-size: 6vw;
+        margin: 2vw 0;
+      }
+      .gnn h6 {
+        margin: 0;
+      }
+      
+      .title {
+        font-size: 4vw;
+        text-align: center;
+        padding-top: 2vw;
+      }
+      
+      #footer {
+        font-size: 4vw;
+        padding-left: 2vw;
+        border-top: vw solid #ddd;
+        border-top: 0.5vw solid #ddd;
+      }
+      
+      #page-heading {
+        text-align: center;
+        font-size: 5vw;
+        padding-top: 2vw;
+      }
+      
+      #question-form {
+        padding: 2vw
+        border-top: 0.5vw solid #ddd;
+      }
+      
+      #question-form label {
+        font-size: 3vw;
+      }
+      
+      #question-form textarea {
+        width: 90vw;
+        font-size: 3vw;
+      }
+      
+      .answer-as {
+        width: 40vw;
+        font-size: 3vw;
+        border: 1px solid #ddd;
+        border-radius: 1vw;
+        background-color: #fff;
+        margin: 2vw 0 0 2vw;
+      }
+      
+      #btn-submit-question {
+        font-size: 3.5vw;
+        background-color: #000088;
+        color: #fff;
+        border: 1px solid #000055;
+      }
+    </style>
+    
+    <script>
+      const pastelColors = [
+        '#FFbbee',
+        '#99FFFF',
+        '#CC99FF',
+        '#dfFFdf',
+        '#aaFF99',
+        '#FFccaa',
+        '#FFFFbb',
+        '#CCCCFF',
+        '#Faa9a9',
+        '#CCFFaa'
+      ]
+      let colorIndex = 0
+      
+      async function fetchData(name, onDatum) {
+        const response = await fetch('/' + name)
+        const data = await response.json()
+        if (data.length > 0) {
+          const elements = [...document.querySelectorAll('.' + name)]
+          elements.forEach((elmt, i) => {
+            elmt.style.backgroundColor = pastelColors[colorIndex]
+            colorIndex++
+            onDatum(elmt, data[i])
+          })
+        } else {
+          alert('Server is busy generating good stuff for you. Try again in a minute.')
+        }
+      }
+      
+      function getAiPromptResults() {
+        fetchData('gemini', (element, result) => {
+          element.querySelector('p').textContent = result
+        })
+      }
+      
+      function getGoodNews() {
+        fetchData('gnn', (element, article) => {
+          const title = element.querySelector('h5')
+          title.textContent = article.title
+          const date = element.querySelector('h6') 
+          const when = article.pubDate.split(' ')
+          const pubDate = `(${when[0]} ${when[1]} ${when[2]} ${when[3]})`
+          date.textContent = pubDate
+          const link = element.querySelector('a')
+          link.href = article.link
+          const summary = element.querySelector('p')
+          const descHalf = article.description.split('</p>')[0]
+          summary.innerHTML = descHalf.split('<p>')[1]
+        })
+      }
+      
+      let role;
+      function answerAs(target, role) {
+        const buttons = [...document.querySelectorAll('.answer-as')]
+        for (let button of buttons) {
+          if (button === target) {
+            button.style.backgroundColor = '#ddd'
+            button.style.border = '0.5vw solid #bbb'
+          } else {
+            button.style.backgroundColor = '#fff'
+            button.style.border = '1px solid #ddd'
+          }
+        }
+      }
+      
+      function submitQuestion() {
+        const question = document.getElementById('question-input').value
+        
+      }
+      
+      document.addEventListener("DOMContentLoaded", _ => {
+        getAiPromptResults()
+        getGoodNews()
+      })
+    </script>
+  </body>
+</html>
