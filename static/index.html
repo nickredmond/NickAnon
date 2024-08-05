@@ -65,7 +65,7 @@
       <p id="answer-dialog-title"><strong>ANSWER:</strong></p>
       <p id="answer-text"></p>
       <form method="dialog">
-        <button>OK</button>
+        <button onclick="dialogClosed()">OK</button>
       </form>
     </dialog>
     <div id="dialog-overlay">
@@ -251,10 +251,11 @@
       }
       
       let role;
-      function answerAs(target, role) {
+      function answerAs(target, pickedRole) {
         const buttons = [...document.querySelectorAll('.answer-as')]
         for (let button of buttons) {
           if (button === target) {
+            role = pickedRole
             button.style.backgroundColor = '#ddd'
             button.style.border = '0.5vw solid #bbb'
           } else {
@@ -264,42 +265,46 @@
         }
       }
       
-      function addAnswerText(index, answer, answerText) {
-        const rand = Math.random() * 3 + 1
-        let nextIndex = index + rand
-        nextIndex = Math.min(nextIndex, answer.length - 1)
-        const length = nextIndex - index + 1 
-        answerText.textContent += answer.substring(index, length)
-        return index + length
+      function dialogClosed() {
+        document.getElementById('dialog-overlay').style.display = 'none'
       }
       
+      let submitInterval;
       function submitQuestion() {
-        const question = document.getElementById('question-input').value
+        const input = document.getElementById('question-input')
+        const question = input.value
         const validation = document.getElementById('question-validation-error')
         if (question && role) {
           validation.style.display = 'none'
-          document.getElementById('').textContent = 'Please wait...'
-          const input = document.getElementById('')
+          const button = document.getElementById('btn-submit-question')
+          button.setAttribute('disabled', true)
+          button.textContent = 'Please wait...'
           input.setAttribute('disabled', true)
+          input.style.fontWeight = 'bold'
           input.value = 'Generating answer...'
+          submitInterval = setInterval(function() {
+            if (input.value === 'Generating answer...') {
+              input.value = 'Generating answer.'
+            } else {
+              input.value += '.'
+            }
+          }, 250)
           fetch('/question', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: { question, role }
+            body: JSON.stringify({ question, role })
           })
           .then(res => res.json())
           .then(data => {
             document.getElementById('dialog-overlay').style.display = 'block'
+            input.style.fontWeight = 'normal'
+            input.value = ''
+            input.removeAttribute('disabled')
+            button.textContent = 'Ask'
+            button.removeAttribute('disabled')
             const answerText = document.getElementById('answer-text')
-            answerText.textContent = ''
+            answerText.textContent = data.answer
             document.getElementById('answer-dialog').setAttribute('open', true)
-            let index = 0
-            while (index < data.answer.length - 1) {
-              const timeout = Math.random() * 100 + 50
-              setTimeout(function() {
-                index = addAnswerText(index, answer, answerText)
-              }, timeout)
-            }
           })
         } else {
           validation.style.display = 'block'

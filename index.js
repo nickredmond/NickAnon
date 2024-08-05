@@ -93,24 +93,26 @@ app.get('/gnn', (req, res) => {
 });
 
 app.post('/question', (req, res) => {
-  let prompt = 'Assume the role of '
+  let prompt = 'Act like you are '
   switch (req.body.role) {
     case 'researcher':
-      prompt += 'an addiction researcher who\'s been in the field for 25 years, '
+      prompt += 'an addiction researcher and you have been in the field for 25 years, '
       break;
     case 'therapist':
-      prompt += 'an addiction therapist who has been sober for 8 years, '
+      prompt += 'an addiction therapist and you have been sober for 8 years, '
       break;
     case 'friend':
-      prompt += 'my closest friend who has a brother in recovery from addiction, '
+      prompt += 'my closest friend and you have a brother in recovery from addiction, '
       break;
     case 'mother':
-      prompt += 'my mother who is willing to help however she can but won\'t enable me, '
+      prompt += 'my mother and you are willing to help however she can but won\'t enable me, '
       break;
   }
   prompt += `while you answer the following question: ${req.body.question}`
-  const answer = getGeminiOutput(prompt)
-  res.send({answer})
+  getGeminiOutput(prompt)
+  .then(answer => {
+    res.send({answer})
+  })
 })
 
 app.listen(port, () => {
