@@ -4,15 +4,28 @@
   </head>
   <body>
     <h3 id="page-heading">Good Energeez, Inc.</h3>
-    <p class="title">&#8595; Scroll down to see more &#8595;</p>
     <p class="title">Enjoy &#128522;</p>
+    
+    <div id="main-menu">
+      <button type="button" onclick="setCurrentView('question-form', 'Recovery AI')">Recovery AI</button>
+      <button type="button" onclick="setCurrentView('warm-wordz', 'Warm Wordz')">Warm Wordz</button>
+      <button type="button" onclick="setCurrentView('gnn-feed', 'Good News')">Good News</button>
+      <button type="button" onclick="setCurrentView('discussion-board', 'Discussion')">Discussion</button>
+    </div>
+    
+    <div id="section-heading">
+      <button id="btn-back" type="button" onclick="goBack()">
+        &#9001;<span>Back</span>
+      </button>
+      <h3 id="section-title"></h3>
+    </div>
     
     <div id="question-form">
       <div id="question-validation-error">
         Provide a question and select role.
       </div>
       <div>
-        <label for="question-input">Ask a question about recovery:</label>
+        <label for="question-input">Ask a recovery-related question:</label>
         <textarea id="question-input" rows="3"></textarea>
       </div>
       <div>
@@ -29,11 +42,14 @@
         </div>
       </div>
       <div>
-        <button id="btn-submit-question" class="btn-submit" type="button" onclick="submitQuestion()">Ask</button>
+        <button id="btn-submit-question" class="btn btn-submit" type="button" onclick="submitQuestion()">Ask</button>
+        <button class="btn btn-secondary" type="button" onclick="clearAiQuestion()">Reset</button>
       </div>
+      <p id="ai-disclaimer"><strong>DISCLAIMER:&nbsp;</strong>This feature of artificial intelligence (AI) is available to encourage thought-provoking discussion and constructive self-reflection. That said, the AI is not a trained professional and isn't intended to be used for therapeutic or scientific purposes. Please use caution.</p>
     </div>
     
-    <div class="feed">
+    <div id="warm-wordz">
+      <div class="feed">
       <p></p>
     </div>
     <div class="feed">
@@ -42,7 +58,10 @@
     <div class="feed">
       <p></p>
     </div>
-    <div class="gnn">
+    </div>
+    
+    <div id="gnn-feed">
+      <div class="gnn">
       <h5></h5>
       <h6></h6>
       <p></p>
@@ -59,13 +78,14 @@
       <h6></h6>
       <p></p>
       <a>Read more</a>
+    </div>
     </div>
     
     <dialog id="answer-dialog">
       <p id="answer-dialog-title"><strong>ANSWER:</strong></p>
       <p id="answer-text"></p>
       <form method="dialog">
-        <button id="dialog-okay" class="btn-submit" onclick="dialogClosed()">OK</button>
+        <button id="dialog-okay" class="btn btn-submit" onclick="dialogClosed()">OK</button>
       </form>
     </dialog>
     <div id="dialog-overlay">
@@ -73,7 +93,7 @@
     
     <div id="footer">
       <p><strong>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a>.</strong></p>
-      <p><strong>Note:&nbsp;</strong>Articles are updated at least daily.</p>
+      <p><strong>Note:&nbsp;</strong>Content is updated every 5 minutes. Articles are updated at least daily.</p>
       <p><strong>What's this about?&nbsp;</strong>Good Energeez is meant to be a place that offers uplifting spirit for people when they feel drained and need a quick boost. This site is especially geared toward those who are recovering from addiction &#9829;</p>
     </div>
     
@@ -111,8 +131,7 @@
       #footer {
         font-size: 4vw;
         padding-left: 2vw;
-        margin-top: 2vw;
-        border-top: vw solid #ddd;
+        margin-top: 3vw;
         border-top: 0.5vw solid #ddd;
       }
       
@@ -125,7 +144,6 @@
       #question-form {
         margin-top: 2vw;
         padding: 2vw;
-        border-top: 0.5vw solid #ddd;
       }
       
       #question-form label {
@@ -178,13 +196,23 @@
         font-size: 5vw;
       }
       
-      .btn-submit {
-        font-size: 6vw;
+      .btn {
+        font-size: 5vw;
         padding: 2vw;
         font-weight: bold;
+        margin-right: 2vw;
+      }
+      
+      .btn-submit {
         background-color: #000088;
         color: #fff;
         border: 1px solid #000055;
+      }
+      
+      .btn-secondary {
+        background-color: #dedede;
+        color: #222;
+        border: 1px solid #888;
       }
       
       #dialog-overlay {
@@ -197,9 +225,86 @@
         right: 0;
         height: 300vh;
       }
+      
+      #section-heading {
+        background-color: #777;
+        padding: 3vw;
+        display: none;
+      }
+      
+      #section-title {
+        font-size: 7vw;
+        color: #efefef;
+        text-align: center;
+        margin: 0;
+      }
+      
+      #btn-back {
+        font-size: 5vw;
+        font-weight: bold;
+        color: #efefef;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        left: 2vw;
+      }
+      
+      #btn-back span {
+        text-decoration: underline;
+        padding-left: 2vw;
+      }
+      
+      #question-form,
+      #warm-wordz,
+      #gnn-feed,
+      #discussion-board {
+        display: none;
+      }
+      
+      #main-menu {
+        text-align: center;
+      }
+     
+      #main-menu button {
+        background-color: #000077;
+        color: white;
+        font-size: 8vw;
+        margin-top: 3vw;
+        padding: 3vw;
+        width: 60vw;
+      }
+      
+      #ai-disclaimer {
+        margin-top: 3vw;
+      }
+      
+      #ai-disclaimer strong {
+        text-decoration: underline;
+      }
     </style>
     
     <script>
+      let currentViewId;
+      function goBack() {
+        document.getElementById(currentViewId).style.display = 'none'
+        document.getElementById('section-heading').style.display = 'none'
+        document.getElementById('main-menu').style.display = 'block'
+        document.getElementById('question-input').value = ''
+      }
+      
+      function setCurrentView(id, title) {
+        currentViewId = id
+        document.getElementById('main-menu').style.display = 'none'
+        document.getElementById(currentViewId).style.display = 'block'
+        document.getElementById('section-heading').style.display = 'block'
+        document.getElementById('section-title').textContent = title
+      }
+      
+      function clearAiQuestion() {
+        document.getElementById('question-input').value = ''
+        answerAs(null, null)
+      }
+      
       const pastelColors = [
         '#FFbbee',
         '#99FFFF',
@@ -253,10 +358,10 @@
       
       let role;
       function answerAs(target, pickedRole) {
+        role = pickedRole
         const buttons = [...document.querySelectorAll('.answer-as')]
         for (let button of buttons) {
           if (button === target) {
-            role = pickedRole
             button.style.backgroundColor = '#ddd'
             button.style.border = '0.5vw solid #bbb'
           } else {
@@ -300,7 +405,7 @@
             clearInterval(submitInterval)
             document.getElementById('dialog-overlay').style.display = 'block'
             input.style.fontWeight = 'normal'
-            input.value = ''
+            input.value = question
             input.removeAttribute('disabled')
             button.textContent = 'Ask'
             button.removeAttribute('disabled')
