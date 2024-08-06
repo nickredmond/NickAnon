@@ -81,11 +81,14 @@
     </div>
     </div>
     
+    <div id="discussion-board">
+    </div>
+    
     <dialog id="answer-dialog">
       <p id="answer-dialog-title"><strong>ANSWER:</strong></p>
       <p id="answer-text"></p>
       <form method="dialog">
-        <button id="dialog-okay" class="btn btn-submit" onclick="dialogClosed()">OK</button>
+        <button id="dialog-okay" class="btn btn-secondary" onclick="dialogClosed()">Close</button>
       </form>
     </dialog>
     <div id="dialog-overlay">
@@ -266,8 +269,10 @@
       }
      
       #main-menu button {
-        background-color: #000077;
-        color: white;
+        background-color: transparent;
+        color: #000077;
+        border: 0.5vw solid #000077;
+        border-radius: 0.5vw;
         font-size: 8vw;
         margin-top: 3vw;
         padding: 3vw;

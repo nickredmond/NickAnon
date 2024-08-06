@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
 const { XMLParser } = require("fast-xml-parser");
 const express = require('express')
+const mysql = require('mysql2/promise')
 const fs = require("fs");
 
 require('dotenv').config()
@@ -167,6 +168,7 @@ function getNextIndex(lastIndex, length) {
   return nextIndex
 }
 
+//var diffHrs = Math.floor((diffMs % 86400000) / 3600000); // hours
 let lastRefreshTime = new Date()
 function isRefreshDue(minutes) {
   const now = new Date()
@@ -217,6 +219,87 @@ app.post('/question', (req, res) => {
   getGeminiOutput(prompt)
   .then(answer => {
     res.send({answer})
+  })
+})
+
+async function queryDb(sql, params) {
+  try {
+    const con = await mysql.createConnection({
+      host: "mysql-step-14-step-14.d.aivencloud.com",
+      port: 28501,
+      user: "avnadmin",
+      password: process.env.DB_PW,
+      database: "defaultdb",
+      ssl : {
+       ca : fs.readFileSync(__dirname + '/ca-cert.pem')
+      }
+    });
+    const result = await con.query(sql, params || [])
+    con.end()
+    return result
+  } catch(err) {
+    console.log('ERROR querying database: ' + err)
+    throw err;
+  }
+}
+
+app.get('/discussions', (req, res) => {
+  const skip = req.query.skip || 0;
+  const take = req.query.take || 10;
+  const sql = `
+    select id, question, answer, TIMESTAMPDIFF(MINUTE,datecreated,CURRENT_TIMESTAMP()) as minutesOld
+    from discussions
+    order by datecreated desc
+    limit ? offset ?`
+  queryDb(sql, [take, skip])
+  .then(results => {
+    res.send(results).end()
+  })
+})
+
+app.get('/discussion/:id/comments', (req, res) => {
+  const sql = `
+    select username, content, TIMESTAMPDIFF(MINUTE,datecreated,CURRENT_TIMESTAMP()) as minutesOld
+    from discussionComments
+    where discussionId = ?
+    order by datecreated`
+  queryDb(sql, [req.params.id])
+  .then(results => {
+    res.send(results).end()
+  })
+})
+
+app.post('/discussion', (req, res) => {
+  const sql = `
+  insert into discussions 
+  (question, answer)
+  values (?, ?)`
+  const params = [req.body.question, req.body.answer]
+  queryDb(sql, params)
+  .then(result => {
+    res.send({id: result.insertId})
+  })
+})
+
+app.post('/discussion/:id/comment', (req, res) => {
+  const sql = `
+    insert into discussionComments
+    (discussionId, username, content)
+    values (?, ?, ?)`
+  const params = [req.params.id, req.body.username, req.body.content]
+  queryDb(sql, params)
+  .then(result => {
+    res.send({id: result.insertId})
+  })
+})
+
+app.get('/query', (req, res) => {
+  const sql = `
+  
+  `
+  queryDb(sql).then(result => {
+    console.log('results: ' + JSON.stringify(result))
+    res.sendStatus(200).end()
   })
 })
 
