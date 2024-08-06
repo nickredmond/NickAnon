@@ -29,7 +29,7 @@
         <textarea id="question-input" rows="3"></textarea>
       </div>
       <div>
-        <label>Answer the question as a:</label>
+        <label>AI answers the question as a:</label>
         <div>
           <div>
             <button type="button" class="answer-as" onclick="answerAs(this, 'researcher')">researcher</button>
@@ -58,6 +58,9 @@
     <div class="feed">
       <p></p>
     </div>
+      <div id="content-refresh-banner">
+        Content will be updated in <span id="minutes-counter"></span>.
+      </div>
     </div>
     
     <div id="gnn-feed">
@@ -92,8 +95,8 @@
     </div>
     
     <div id="footer">
-      <p><strong>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a>.</strong></p>
-      <p><strong>Note:&nbsp;</strong>Content is updated every 5 minutes. Articles are updated at least daily.</p>
+      <p><strong>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a> and lots of love.</strong></p>
+      <p><strong>Note:&nbsp;</strong>Good News articles are updated at least daily.</p>
       <p><strong>What's this about?&nbsp;</strong>Good Energeez is meant to be a place that offers uplifting spirit for people when they feel drained and need a quick boost. This site is especially geared toward those who are recovering from addiction &#9829;</p>
     </div>
     
@@ -161,9 +164,9 @@
       
       .answer-as {
         width: 40vw;
-        font-size: 4vw;
+        font-size: 6vw;
         padding: 2vw;
-        border: 1px solid #ddd;
+        border: 0.25vw solid #ccc;
         border-radius: 1vw;
         background-color: #fff;
         margin: 2vw 0 0 2vw;
@@ -280,6 +283,13 @@
       
       #ai-disclaimer strong {
         text-decoration: underline;
+      }
+      
+      #content-refresh-banner {
+        padding: 2vw;
+        margin-top: 2vw;
+        font-size: 4vw;
+        background-color: #FFFF33;
       }
     </style>
     
@@ -418,9 +428,28 @@
         }
       }
       
+      let refreshMinutes;
       document.addEventListener("DOMContentLoaded", _ => {
         getFeedResults()
         getGoodNews()
+        
+        refreshMinutes = 5
+        const minutesSpan = document.getElementById('minutes-counter')
+        minutesSpan.textContent = refreshMinutes + ' minutes'
+        setInterval(function() {
+          refreshMinutes--
+          if (refreshMinutes < 0) {
+            getFeedResults()
+            refreshMinutes = 5
+            minutesSpan.textContent = '5 minutes'
+          } else if (refreshMinutes === 0) {
+            minutesSpan.textContent = 'less than 1 minute'
+          } else if (refreshMinutes === 1) {
+            minutesSpan.textContent = '1 minute'
+          } else {
+            minutesSpan.textContent = refreshMinutes + ' minutes'
+          }
+        }, 60000)
       })
     </script>
   </body>
