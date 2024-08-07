@@ -37,36 +37,29 @@
     </div>
     
     <div id="warm-wordz">
-      <div class="feed">
-      <p></p>
-    </div>
-    <div class="feed">
-      <p></p>
-    </div>
-    <div class="feed">
-      <p></p>
-    </div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
+      <div class="feed"><p></p></div>
     </div>
     
     <div id="gnn-feed">
-      <div class="gnn">
-      <h5></h5>
-      <h6></h6>
-      <p></p>
-      <a>Read more</a>
-    </div>
-    <div class="gnn">
-      <h5></h5>
-      <h6></h6>
-      <p></p>
-      <a>Read more</a>
-    </div>
-    <div class="gnn">
-      <h5></h5>
-      <h6></h6>
-      <p></p>
-      <a>Read more</a>
-    </div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
+      <div class="gnn"><h5></h5><h6></h6><p></p><a>Read more</a></div>
     </div>
     
     <div id="discussion-board">
@@ -92,8 +85,7 @@
     </div>
     
     <div id="footer">
-      <p><strong>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a> and lots of love.</strong></p>
-      <p><strong>Note:&nbsp;</strong>Warm Wordz are updated every 5 minutes. Good News articles are updated at least daily.</p>
+      <p>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a> and lots of love.</p>
     </div>
     
     <script>
@@ -133,6 +125,7 @@
           })
         }
         document.getElementById('main-menu').style.display = 'none'
+        document.getElementById('footer').style.display = 'none'
         document.getElementById(currentViewId).style.display = 'block'
         document.getElementById('section-heading').style.display = 'block'
         document.getElementById('section-title').textContent = title
@@ -145,6 +138,7 @@
         '#dfFFdf',
         '#aaFF99',
         '#FFFFbb',
+        '#33FFFF',
         '#CCCCFF',
         '#Faa9a9',
         '#CCFFaa'
@@ -154,21 +148,20 @@
       async function fetchData(name, onDatum) {
         const response = await fetch('/' + name)
         const data = await response.json()
-        if (data.length > 0) {
-          const elements = [...document.querySelectorAll('.' + name)]
-          elements.forEach((elmt, i) => {
-            elmt.style.backgroundColor = pastelColors[colorIndex]
-            colorIndex++
-            onDatum(elmt, data[i])
-          })
-        } else {
-          alert('Server is busy generating good stuff for you. Try again in a minute.')
-        }
+        const elements = [...document.querySelectorAll('.' + name)]
+        elements.forEach((elmt, i) => {
+          elmt.style.backgroundColor = pastelColors[colorIndex]
+          colorIndex++
+          if (colorIndex >= pastelColors.length) {
+            colorIndex = 0
+          }
+          onDatum(elmt, data[i])
+        })
       }
       
       function getFeedResults() {
         fetchData('feed', (element, result) => {
-          element.querySelector('p').textContent = result
+          element.querySelector('p').innerHTML = result.content
         })
       }
       

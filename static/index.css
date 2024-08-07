@@ -23,13 +23,13 @@ body {
 }
 
 .title {
-  font-size: 4vw;
+  font-size: 5vw;
   text-align: center;
   padding-top: 2vw;
 }
 
 #footer {
-  font-size: 4vw;
+  font-size: 5vw;
   padding-left: 2vw;
   margin-top: 3vw;
   border-top: 0.5vw solid #ddd;
@@ -37,7 +37,7 @@ body {
 
 #page-heading {
   text-align: center;
-  font-size: 5vw;
+  font-size: 6vw;
   padding-top: 2vw;
 }
 
