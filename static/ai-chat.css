@@ -20,4 +20,25 @@
 
 #typing-username {
   
+
+}
+
+#chat-form {
+  display: flex;
+  width: 100%
+  position: -webkit-sticky; /* for browser compatibility */
+  position: sticky;
+  bottom: 0;
+}
+
+#chat-input {
+  flex: 1;
+  font-size: 4vw;
+  outline: 0.25vw solid #ccc;
+}
+
+#chat-btn-send {
+  background-color: #000088;
+  color: #fff;
+  font-size: 4vw;
 }

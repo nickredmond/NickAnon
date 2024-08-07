@@ -135,6 +135,9 @@ body {
   background-color: #777;
   padding: 3vw;
   display: none;
+  position: -webkit-sticky; /* for browser compatibility */
+  position: sticky;
+  top: 0;
 }
 
 #section-title {

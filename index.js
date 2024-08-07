@@ -63,14 +63,15 @@ async function getGeminiOutput(prompt, model) {
 }
 
 function sendAiMessage(prompt, aiIndex) {
-  getGeminiOutput(prompt, models[aiIndex])
-  .then(reply => {
+  //getGeminiOutput(prompt, models[aiIndex])
+ // .then(reply => {
     io.emit('message', {
       userId: '123',
       username: aiUsernames[aiIndex],
-      payload: reply
+     payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
+     // payload: reply
     })
-  })
+ // })
 }
 
 let activeUserCount = 0
