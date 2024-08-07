@@ -1,10 +1,22 @@
 const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
 const { XMLParser } = require("fast-xml-parser");
+const { v4: uuid } = require('uuid')
 const express = require('express')
 const mysql = require('mysql2/promise')
 const fs = require("fs");
+const http = require('http');
+const { Server } = require("socket.io");
 
 require('dotenv').config()
+
+const app = express()
+const port = process.env.PORT
+
+app.use(express.static('static'))
+app.use(express.json())
+
+const server = http.createServer(app);
+const io = new Server(server);
 
 const safetySettings = [
   {
@@ -26,7 +38,23 @@ const safetySettings = [
 ];
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings });
+// todo: have several of these 
+// feed initial prompts 
+// then feed user chats as prompts 
+// maybe take turns with AIs?
+
+const models = [
+  // dad
+//  genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings }),
+  // therapist in recovery
+//  genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings }),
+  // young woman in early recovery
+  genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings })
+]
+const aiContexts = [
+  'Context: You are a middle-aged father from rural Arkansas with a teenaged son who is battling addiction. You are currently in a recovery meeting for support and to see if you can find useful info to help your son.'
+]
+const aiUsernames = ['Danny (AI)']
 
 const jokesFeed = [
   `What do you call a boomerang that doesn't come back? 
@@ -119,11 +147,47 @@ const philosophyFeed = [
   `Fall seven times and stand up eight.`
 ]
 
-async function getGeminiOutput(prompt) {
+async function getGeminiOutput(prompt, model) {
   const result = await model.generateContent(prompt);
   const response = await result.response;
   return response.text();
 }
+
+function sendAiMessage(prompt, aiIndex) {
+  getGeminiOutput(prompt, models[aiIndex])
+  .then(reply => {
+    io.emit('message', {
+      userId: '123',
+      username: aiUsernames[aiIndex],
+      payload: reply
+    })
+  })
+}
+
+let activeUserCount = 0
+let messagesSinceReprompt = -1
+
+io.on('connection', (socket) => {
+  activeUserCount++
+  //todo: emit active user count
+  const aiIntroIndex = Math.floor(Math.random() * models.length)
+  io.emit('typing', {
+    userId: '123',
+    username: aiUsernames[aiIntroIndex]
+  })
+  const introPrompt = `${aiContexts[aiIntroIndex]} Introduce yourself to someone who just joined the meeting.`
+  sendAiMessage(introPrompt, aiIntroIndex)
+  socket.on('message', (msg) => {
+    io.emit('message', msg);
+    const aiIndex = Math.floor(Math.random() * models.length)
+    const needsReprompt = messagesSinceReprompt >= 10 || messagesSinceReprompt < 0
+    const prompt = needsReprompt ? `${aiContexts[aiIndex]} Someone just spoke at the meeting and said: ${msg.payload}` : `Person named ${msg.username} just said: ${msg.payload}`
+    sendAiMessage(prompt, aiIndex)
+  });
+  socket.on('disconnect', () => {
+    activeUserCount--
+  });
+});
 
 let goodNewsArticles = [];
 async function getGoodNewsFeed() {
@@ -143,18 +207,10 @@ async function getGoodNewsFeed() {
   goodNewsArticles = updatedArticles
 }
 
-getGoodNewsFeed()
-
 const oneDay = 1000 * 60 * 60 * 24
 setInterval(function() {
   getGoodNewsFeed()
 }, oneDay)
-
-const app = express()
-const port = process.env.PORT
-
-app.use(express.static('static'))
-app.use(express.json())
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/static/index.html'));
@@ -199,29 +255,6 @@ app.get('/gnn', (req, res) => {
   res.send(goodNewsArticles)
 });
 
-app.post('/question', (req, res) => {
-  let prompt = 'Act like you are '
-  switch (req.body.role) {
-    case 'researcher':
-      prompt += 'an addiction researcher and you have been in the field for 25 years, '
-      break;
-    case 'therapist':
-      prompt += 'an addiction therapist and you have been sober for 8 years, '
-      break;
-    case 'friend':
-      prompt += 'my closest friend and you have a brother in recovery from addiction, '
-      break;
-    case 'mother':
-      prompt += 'my mother and you are willing to help however you can but you won\'t enable me, '
-      break;
-  }
-  prompt += `while you answer the following question: ${req.body.question}`
-  getGeminiOutput(prompt)
-  .then(answer => {
-    res.send({answer})
-  })
-})
-
 async function queryDb(sql, params) {
   try {
     const con = await mysql.createConnection({
@@ -243,56 +276,6 @@ async function queryDb(sql, params) {
   }
 }
 
-app.get('/discussions', (req, res) => {
-  const skip = req.query.skip || 0;
-  const take = req.query.take || 10;
-  const sql = `
-    select id, question, answer, TIMESTAMPDIFF(MINUTE,datecreated,CURRENT_TIMESTAMP()) as minutesOld
-    from discussions
-    order by datecreated desc
-    limit ? offset ?`
-  queryDb(sql, [take, skip])
-  .then(results => {
-    res.send(results).end()
-  })
-})
-
-app.get('/discussion/:id/comments', (req, res) => {
-  const sql = `
-    select username, content, TIMESTAMPDIFF(MINUTE,datecreated,CURRENT_TIMESTAMP()) as minutesOld
-    from discussionComments
-    where discussionId = ?
-    order by datecreated`
-  queryDb(sql, [req.params.id])
-  .then(results => {
-    res.send(results).end()
-  })
-})
-
-app.post('/discussion', (req, res) => {
-  const sql = `
-  insert into discussions 
-  (question, answer)
-  values (?, ?)`
-  const params = [req.body.question, req.body.answer]
-  queryDb(sql, params)
-  .then(result => {
-    res.send({id: result.insertId})
-  })
-})
-
-app.post('/discussion/:id/comment', (req, res) => {
-  const sql = `
-    insert into discussionComments
-    (discussionId, username, content)
-    values (?, ?, ?)`
-  const params = [req.params.id, req.body.username, req.body.content]
-  queryDb(sql, params)
-  .then(result => {
-    res.send({id: result.insertId})
-  })
-})
-
 app.get('/query', (req, res) => {
   const sql = `
   
@@ -303,7 +286,9 @@ app.get('/query', (req, res) => {
   })
 })
 
-app.listen(port, () => {
+getGoodNewsFeed()
+
+server.listen(port, () => {
     console.log(`app listening on port ${port}`)
  })
  

@@ -1,13 +1,17 @@
 <html>
   <head>
     <title>NickAnon</title>
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/ai-chat.css">
+    <script src="/ai-chat.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
     <h3 id="page-heading">Good Energeez, Inc.</h3>
     <p class="title">Enjoy &#128522;</p>
     
     <div id="main-menu">
-      <button type="button" onclick="setCurrentView('question-form', 'Recovery AI')">Recovery AI</button>
+      <button type="button" onclick="setCurrentView('ai-chat', '24/7 Chat')">24/7 Chat</button>
       <button type="button" onclick="setCurrentView('warm-wordz', 'Warm Wordz')">Warm Wordz</button>
       <button type="button" onclick="setCurrentView('gnn-feed', 'Good News')">Good News</button>
       <button type="button" onclick="setCurrentView('discussion-board', 'Discussion')">Discussion</button>
@@ -20,32 +24,16 @@
       <h3 id="section-title"></h3>
     </div>
     
-    <div id="question-form">
-      <div id="question-validation-error">
-        Provide a question and select role.
+    <div id="ai-chat">
+      <div id="chat-messages"></div>
+      <div id="typing-indicator">
+        <span id="typing-username"></span>&nbsp;is typing...
       </div>
-      <div>
-        <label for="question-input">Ask a recovery-related question:</label>
-        <textarea id="question-input" rows="3"></textarea>
+      <div id="chat-form">
+        <textarea id="chat-input" rows="2"></textarea>
+        <button type="button" onclick="sendChatMessage()">Send</button>
       </div>
-      <div>
-        <label>AI answers the question as a:</label>
-        <div>
-          <div>
-            <button type="button" class="answer-as" onclick="answerAs(this, 'researcher')">researcher</button>
-            <button type="button" class="answer-as" onclick="answerAs(this, 'therapist')">therapist</button>
-          </div>
-          <div>
-            <button type="button" class="answer-as" onclick="answerAs(this, 'mother')">mother</button>
-            <button type="button" class="answer-as" onclick="answerAs(this, 'friend')">friend</button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <button id="btn-submit-question" class="btn btn-submit" type="button" onclick="submitQuestion()">Ask</button>
-        <button class="btn btn-secondary" type="button" onclick="clearAiQuestion()">Reset</button>
-      </div>
-      <p id="ai-disclaimer"><strong>DISCLAIMER:&nbsp;</strong>This feature of artificial intelligence (AI) is available to encourage thought-provoking discussion and constructive self-reflection. That said, the AI is not a trained professional and isn't intended to be used for therapeutic or scientific purposes. Please use caution.</p>
+      <!--<p id="ai-disclaimer"><strong>DISCLAIMER:&nbsp;</strong>Chat in real-time with people 24/7 where the emphasis is addiction recovery. Keep in mind, this app includes chat-bots that are powered by artificial intelligence (AI) to help keep conversation going. Please use caution, since AI isn't professionally trained or self-aware.</p>-->
     </div>
     
     <div id="warm-wordz">
@@ -82,213 +70,49 @@
     </div>
     
     <div id="discussion-board">
+      <p>Coming Soon</p>
     </div>
     
-    <dialog id="answer-dialog">
-      <p id="answer-dialog-title"><strong>ANSWER:</strong></p>
-      <p id="answer-text"></p>
+    <dialog id="welcome-dialog" class="dialog">
+      <h4>Hello, friend!</h4>
+      <p>Welcome to Good Energeez, a place that offers uplifting spirit and togetherness for people who are recovering from addiction &#9829;</p>
+      <p>Enjoy the corny dad jokes, light-hearted news stories, and real-time chat with real people and artificial intelligence (AI) companions.</p>
+      <p>You can optionally set a username below that'll be displayed with any comments you add.</p>
+      <div id="username-form">
+        <label for="username">What should we call you? (Optional)</label>
+        <input id="username" type="text" placeholder="Enter name or username..." />
+      </div>
       <form method="dialog">
-        <button id="dialog-okay" class="btn btn-secondary" onclick="dialogClosed()">Close</button>
+        <button class="btn btn-submit" onclick="saveUsername()">Save</button>
+        <button class="btn btn-secondary" onclick="dismissUsername()">Close</button>
       </form>
     </dialog>
+    
     <div id="dialog-overlay">
     </div>
     
     <div id="footer">
       <p><strong>Powered by <a href="https://www.goodnewsnetwork.org/">Good News Network</a> and <a href="https://gemini.google.com/">Gemini AI</a> and lots of love.</strong></p>
       <p><strong>Note:&nbsp;</strong>Warm Wordz are updated every 5 minutes. Good News articles are updated at least daily.</p>
-      <p><strong>What's this about?&nbsp;</strong>Good Energeez is meant to be a place that offers uplifting spirit for people when they feel drained and need a quick boost. This site is especially geared toward those who are recovering from addiction &#9829;</p>
     </div>
     
-    <style>
-      body {
-        font-family: Sans-Serif;
-      }
-    
-      .feed, .gnn {
-        margin: 2vw;
-        padding: 2vw;
-      }
-      
-      .feed {
-        font-size: 6vw;
-      }
-      
-      .gnn {
-        font-size: 4vw;
-      }
-      .gnn h5 {
-        font-size: 6vw;
-        margin: 2vw 0;
-      }
-      .gnn h6 {
-        margin: 0;
-      }
-      
-      .title {
-        font-size: 4vw;
-        text-align: center;
-        padding-top: 2vw;
-      }
-      
-      #footer {
-        font-size: 4vw;
-        padding-left: 2vw;
-        margin-top: 3vw;
-        border-top: 0.5vw solid #ddd;
-      }
-      
-      #page-heading {
-        text-align: center;
-        font-size: 5vw;
-        padding-top: 2vw;
-      }
-      
-      #question-form {
-        margin-top: 2vw;
-        padding: 2vw;
-      }
-      
-      #question-form label {
-        font-size: 3vw;
-        font-weight: bold;
-      }
-      
-      #question-form textarea {
-        width: 90vw;
-        font-size: 3vw;
-        height: 20vw;
-        border: 0.25vw solid #ddd;
-        border-radius: 0.1vw;
-      }
-      
-      .answer-as {
-        width: 40vw;
-        font-size: 6vw;
-        padding: 2vw;
-        border: 0.25vw solid #ccc;
-        border-radius: 1vw;
-        background-color: #fff;
-        margin: 2vw 0 0 2vw;
-      }
-      
-      #btn-submit-question {
-        margin-top: 2vw;
-        font-size: 5vw;
-      }
-      
-      #question-validation-error {
-        display: none;
-        font-size: 4vw;
-        color: #cc3333;
-        padding-bottom: 2vw;
-      }
-      
-      #answer-dialog {
-        z-index: 20;
-        top: 10vh;
-        width: 80vw;
-        padding-left: 4vw;
-      }
-      
-      #answer-dialog-title {
-        margin-top: 2vw;
-      }
-      
-      #answer-dialog p {
-        font-size: 5vw;
-      }
-      
-      .btn {
-        font-size: 5vw;
-        padding: 2vw;
-        font-weight: bold;
-        margin-right: 2vw;
-      }
-      
-      .btn-submit {
-        background-color: #000088;
-        color: #fff;
-        border: 1px solid #000055;
-      }
-      
-      .btn-secondary {
-        background-color: #dedede;
-        color: #222;
-        border: 1px solid #888;
-      }
-      
-      #dialog-overlay {
-        display: none;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 10;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 300vh;
-      }
-      
-      #section-heading {
-        background-color: #777;
-        padding: 3vw;
-        display: none;
-      }
-      
-      #section-title {
-        font-size: 7vw;
-        color: #efefef;
-        text-align: center;
-        margin: 0;
-      }
-      
-      #btn-back {
-        font-size: 5vw;
-        font-weight: bold;
-        color: #efefef;
-        background-color: transparent;
-        border: none;
-        position: absolute;
-        left: 2vw;
-      }
-      
-      #btn-back span {
-        text-decoration: underline;
-        padding-left: 2vw;
-      }
-      
-      #question-form,
-      #warm-wordz,
-      #gnn-feed,
-      #discussion-board {
-        display: none;
-      }
-      
-      #main-menu {
-        text-align: center;
-      }
-     
-      #main-menu button {
-        background-color: transparent;
-        color: #000077;
-        border: 0.5vw solid #000077;
-        border-radius: 0.5vw;
-        font-size: 8vw;
-        margin-top: 3vw;
-        padding: 3vw;
-        width: 60vw;
-      }
-      
-      #ai-disclaimer {
-        margin-top: 3vw;
-      }
-      
-      #ai-disclaimer strong {
-        text-decoration: underline;
-      }
-    </style>
-    
     <script>
+      let chatSocket;
+      
+      function sendChatMessage() {
+        sendMessage(chatSocket)
+      }
+      
+      function saveUsername() {
+        const username = document.getElementById('username').value
+        localStorage.setItem('username', username || 'Anonymous')
+      }
+      
+      function dismissUsername() {
+        dialogClosed()
+        localStorage.setItem('username', 'Anonymous')
+      }
+      
       let currentViewId;
       function goBack() {
         document.getElementById(currentViewId).style.display = 'none'
@@ -299,15 +123,19 @@
       
       function setCurrentView(id, title) {
         currentViewId = id
+        if (!chatSocket && currentViewId === 'ai-chat') {
+          chatSocket = io()
+          chatSocket.on('typing', function(msg) {
+            setTyping(msg)
+          })
+          chatSocket.on('message', function(msg) {
+            receiveMessage(msg)
+          })
+        }
         document.getElementById('main-menu').style.display = 'none'
         document.getElementById(currentViewId).style.display = 'block'
         document.getElementById('section-heading').style.display = 'block'
         document.getElementById('section-title').textContent = title
-      }
-      
-      function clearAiQuestion() {
-        document.getElementById('question-input').value = ''
-        answerAs(null, null)
       }
       
       const pastelColors = [
@@ -316,7 +144,6 @@
         '#CC99FF',
         '#dfFFdf',
         '#aaFF99',
-    //    '#FFccaa',
         '#FFFFbb',
         '#CCCCFF',
         '#Faa9a9',
@@ -348,7 +175,7 @@
       function getGoodNews() {
         fetchData('gnn', (element, article) => {
           const title = element.querySelector('h5')
-          title.textContent = article.title
+          title.innerHTML = article.title
           const date = element.querySelector('h6') 
           const when = article.pubDate.split(' ')
           const pubDate = `(${when[0]} ${when[1]} ${when[2]} ${when[3]})`
@@ -361,71 +188,19 @@
         })
       }
       
-      let role;
-      function answerAs(target, pickedRole) {
-        role = pickedRole
-        const buttons = [...document.querySelectorAll('.answer-as')]
-        for (let button of buttons) {
-          if (button === target) {
-            button.style.backgroundColor = '#ddd'
-            button.style.border = '0.5vw solid #bbb'
-          } else {
-            button.style.backgroundColor = '#fff'
-            button.style.border = '1px solid #ddd'
-          }
-        }
-      }
-      
       function dialogClosed() {
         document.getElementById('dialog-overlay').style.display = 'none'
-      }
-      
-      let submitInterval;
-      function submitQuestion() {
-        const input = document.getElementById('question-input')
-        const question = input.value
-        const validation = document.getElementById('question-validation-error')
-        if (question && role) {
-          validation.style.display = 'none'
-          const button = document.getElementById('btn-submit-question')
-          button.setAttribute('disabled', true)
-          button.textContent = 'Please wait...'
-          input.setAttribute('disabled', true)
-          input.style.fontWeight = 'bold'
-          input.value = 'Generating answer...'
-          submitInterval = setInterval(function() {
-            if (input.value === 'Generating answer...') {
-              input.value = 'Generating answer.'
-            } else {
-              input.value += '.'
-            }
-          }, 250)
-          fetch('/question', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question, role })
-          })
-          .then(res => res.json())
-          .then(data => {
-            clearInterval(submitInterval)
-            document.getElementById('dialog-overlay').style.display = 'block'
-            input.style.fontWeight = 'normal'
-            input.value = question
-            input.removeAttribute('disabled')
-            button.textContent = 'Ask'
-            button.removeAttribute('disabled')
-            const answerText = document.getElementById('answer-text')
-            answerText.textContent = data.answer
-            document.getElementById('answer-dialog').setAttribute('open', true)
-          })
-        } else {
-          validation.style.display = 'block'
-        }
       }
       
       document.addEventListener("DOMContentLoaded", _ => {
         getFeedResults()
         getGoodNews()
+        
+        const username = localStorage.getItem('username')
+        if (!username) {
+          document.getElementById('dialog-overlay').style.display = 'block'
+          document.getElementById('welcome-dialog').setAttribute('open', true)
+        }
         
         setInterval(function() {
           getFeedResults()

@@ -1,0 +1,205 @@
+body {
+  font-family: Sans-Serif;
+}
+
+.feed, .gnn {
+  margin: 2vw;
+  padding: 2vw;
+}
+
+.feed {
+  font-size: 6vw;
+}
+
+.gnn {
+  font-size: 4vw;
+}
+.gnn h5 {
+  font-size: 6vw;
+  margin: 2vw 0;
+}
+.gnn h6 {
+  margin: 0;
+}
+
+.title {
+  font-size: 4vw;
+  text-align: center;
+  padding-top: 2vw;
+}
+
+#footer {
+  font-size: 4vw;
+  padding-left: 2vw;
+  margin-top: 3vw;
+  border-top: 0.5vw solid #ddd;
+}
+
+#page-heading {
+  text-align: center;
+  font-size: 5vw;
+  padding-top: 2vw;
+}
+
+#question-form {
+  margin-top: 2vw;
+  padding: 2vw;
+}
+
+#question-form label {
+  font-size: 3vw;
+  font-weight: bold;
+}
+
+#question-form textarea {
+  width: 90vw;
+  font-size: 3vw;
+  height: 20vw;
+  border: 0.25vw solid #ddd;
+  border-radius: 0.1vw;
+}
+
+.answer-as {
+  width: 40vw;
+  font-size: 6vw;
+  padding: 2vw;
+  border: 0.25vw solid #ccc;
+  border-radius: 1vw;
+  background-color: #fff;
+  margin: 2vw 0 0 2vw;
+}
+
+#btn-submit-question {
+  margin-top: 2vw;
+  font-size: 5vw;
+}
+      
+#question-validation-error {
+  display: none;
+  font-size: 4vw;
+  color: #cc3333;
+  padding-bottom: 2vw;
+}
+
+.dialog {
+  z-index: 20;
+  top: 5vh;
+  width: 80vw;
+  padding-left: 4vw;
+}
+
+.dialog-title {
+  margin-top: 2vw;
+}
+
+.dialog p {
+  font-size: 5vw;
+}
+
+#welcome-dialog h4 {
+  font-size: 6vw;
+  margin: 2vw;
+}
+
+.btn {
+  font-size: 5vw;
+  padding: 2vw;
+  font-weight: bold;
+  margin-right: 2vw;
+}
+
+.btn-submit {
+  background-color: #000088;
+  color: #fff;
+  border: 1px solid #000055;
+}
+
+.btn-secondary {
+  background-color: #dedede;
+  color: #222;
+  border: 1px solid #888;
+}
+
+#dialog-overlay {
+  display: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300vh;
+}
+
+#section-heading {
+  background-color: #777;
+  padding: 3vw;
+  display: none;
+}
+
+#section-title {
+  font-size: 7vw;
+  color: #efefef;
+  text-align: center;
+  margin: 0;
+}
+
+#btn-back {
+  font-size: 5vw;
+  font-weight: bold;
+  color: #efefef;
+  background-color: transparent;
+  border: none;
+  position: absolute;
+  left: 2vw;
+}
+
+#btn-back span {
+  text-decoration: underline;
+  padding-left: 2vw;
+}
+
+#ai-chat,
+#warm-wordz,
+#gnn-feed,
+#discussion-board {
+  display: none;
+}
+
+#main-menu {
+  text-align: center;
+}
+
+#main-menu button {
+  background-color: transparent;
+  color: #000077;
+  border: 0.5vw solid #000077;
+  border-radius: 0.5vw;
+  font-size: 8vw;
+  margin-top: 3vw;
+  padding: 3vw;
+  width: 60vw;
+}
+
+#ai-disclaimer {
+  margin-top: 3vw;
+}
+
+#ai-disclaimer strong {
+  text-decoration: underline;
+}
+
+#username-form {
+  margin-bottom: 2vw;
+}
+
+#username-form label {
+  font-size: 6vw;
+}
+
+#username {
+  width: 75vw;
+  font-size: 6vw;
+  padding: 1vw;
+  border: 0.25vw solid #ddd;
+}
