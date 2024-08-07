@@ -6,6 +6,7 @@ const mysql = require('mysql2/promise')
 const fs = require("fs");
 const http = require('http');
 const { Server } = require("socket.io");
+const pantry = require('pantry-node')
 
 require('dotenv').config()
 
@@ -17,6 +18,25 @@ app.use(express.json())
 
 const server = http.createServer(app);
 const io = new Server(server);
+
+let chatHistory = [];
+const pantryClient = new pantry(process.env.PANTRY_KEY)
+const options = { parseJSON: true }
+pantryClient.basket
+  .get('ChatMessages', options)
+  .then((contents) => {
+    chatHistory = contents.last10
+  })
+
+setInterval(function() {
+  const last10 = chatHistory.slice(chatHistory.length-10)
+  chatHistory = last10
+  const options = { parseJSON: true } 
+  const payload = { last10 }
+  pantryClient.basket
+    .update('ChatMessages', payload, options)
+    .then((response) => console.log(response))
+}, process.env.CHAT_BACKUP_INTERVAL)
 
 const safetySettings = [
   {
@@ -52,7 +72,7 @@ const models = [
   genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings })
 ]
 const aiContexts = [
-  'Context: You are a middle-aged father from rural Arkansas with a teenaged son who is battling addiction. You are currently in a recovery meeting for support and to see if you can find useful info to help your son.'
+  'Context: You are a middle-aged father named Danny. You are from rural Arkansas. You have a teenaged son who is battling addiction. You are currently in an online recovery meeting for support and to see if you can find useful info to help your son.'
 ]
 const aiUsernames = ['Danny (AI)']
 
@@ -63,15 +83,15 @@ async function getGeminiOutput(prompt, model) {
 }
 
 function sendAiMessage(prompt, aiIndex) {
-  //getGeminiOutput(prompt, models[aiIndex])
- // .then(reply => {
+  getGeminiOutput(prompt, models[aiIndex])
+  .then(reply => {
     io.emit('message', {
       userId: '123',
       username: aiUsernames[aiIndex],
-     payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
-     // payload: reply
+   //  payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
+      payload: reply
     })
- // })
+  })
 }
 
 let activeUserCount = 0
@@ -80,19 +100,29 @@ let messagesSinceReprompt = -1
 io.on('connection', (socket) => {
   activeUserCount++
   //todo: emit active user count
+  for (let msg of chatHistory) {
+    socket.emit('message', msg)
+  }
   const aiIntroIndex = Math.floor(Math.random() * models.length)
-  io.emit('typing', {
-    userId: '123',
-    username: aiUsernames[aiIntroIndex]
-  })
+  setTimeout(function() {
+    io.emit('typing', {
+      userId: '123',
+      username: aiUsernames[aiIntroIndex]
+    })
+  }, 100)
   const introPrompt = `${aiContexts[aiIntroIndex]} Introduce yourself to someone who just joined the meeting.`
   sendAiMessage(introPrompt, aiIntroIndex)
   socket.on('message', (msg) => {
     io.emit('message', msg);
+    chatHistory.push(msg)
     const aiIndex = Math.floor(Math.random() * models.length)
-    const needsReprompt = messagesSinceReprompt >= 10 || messagesSinceReprompt < 0
+    const needsReprompt = messagesSinceReprompt >= process.env.AI_REPROMPT_COUNT || messagesSinceReprompt < 0
     const prompt = needsReprompt ? `${aiContexts[aiIndex]} Someone just spoke at the meeting and said: ${msg.payload}` : `Person named ${msg.username} just said: ${msg.payload}`
     sendAiMessage(prompt, aiIndex)
+    if (needsReprompt) {
+      messagesSinceReprompt = 0
+    }
+    messagesSinceReprompt++
   });
   socket.on('disconnect', () => {
     activeUserCount--
