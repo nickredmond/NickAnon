@@ -1,13 +1,20 @@
 #chat-messages {
-  
+  background-color: #ccc;
+  padding: 2vw;
 }
 
 .msg-bubble {
-  
+  background-color: #fff;
+  border: 1px solid #aaa;
+  border-radius: 2vw;
+  width: 90vw;
+  padding: 2vw;
+  font-size: 4vw;
+  margin-bottom: 2vw;
 }
 
 .msg-meta {
-  
+  font-weight: bold;
 }
 
 .msg-contents {
@@ -15,12 +22,14 @@
 }
 
 #typing-indicator {
-  
+  background-color: #ccc;
+  color: #444;
+  font-size: 4vw;
+  padding: 2vw;
 }
 
 #typing-username {
-  
-
+  font-weight: bold;
 }
 
 #chat-form {
@@ -40,5 +49,6 @@
 #chat-btn-send {
   background-color: #000088;
   color: #fff;
-  font-size: 4vw;
+  font-weight: bold;
+  font-size: 6vw;
 }
