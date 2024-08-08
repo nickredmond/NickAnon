@@ -15,7 +15,7 @@
       <button type="button" onclick="setCurrentView('ai-chat', '24/7 Chat')">24/7 Chat</button>
       <button type="button" onclick="setCurrentView('warm-wordz', 'Warm Wordz')">Warm Wordz</button>
       <button type="button" onclick="setCurrentView('gnn-feed', 'Good News')">Good News</button>
-      <button type="button" onclick="setCurrentView('discussion-board', 'Discussion')">Discussion</button>
+      <button type="button" onclick="setCurrentView('discussion-board', 'Feedback :)')">Feedback :)</button>
     </div>
     
     <div id="section-heading">
@@ -64,7 +64,20 @@
     </div>
     
     <div id="discussion-board">
-      <p>Coming Soon</p>
+      <p id="discussion-board-desc"><strong>Got any ideas, concerns, or other comments you want to share?&nbsp;</strong>Just leave your feedback below and it'll be added to this board (scroll down to see what's already been added). I'll review the board regularly, and let's see what we can build together. After all, recovery is a "we" thing.</p>
+      <div>
+        <div id="feedback-input-group" class="feedback-input-group">
+          <label for="feedback-input">Feedback:</label>
+          <textarea id="feedback-input" class="feedback-input" rows="4" maxlength="500" placeholder="Thank you so much! <3"></textarea>
+        </div>
+        <div id="feedback-name-group" class="feedback-input-group">
+          <label for="feedback-name">Name (optional):</label>
+          <input id="feedback-name" class="feedback-input" type="text" maxlength="50" placeholder="ex: Bill Wilson" />
+        </div>
+        <button id="feedback-btn-submit" type="button" class="btn btn-submit" onclick="submitFeedback()">Submit</button>
+      </div>
+      <div id="feedback-success-alert"><strong>Success!</strong> Your feedback has been submitted.</div>
+      <div id="feedback-board"></div>
     </div>
     
     <dialog id="welcome-dialog" class="dialog">
@@ -92,12 +105,78 @@
     <script>
       let chatSocket;
       
+      const pastelColors = [
+        '#FFbbee', '#99FFFF', '#CC99FF',
+        '#dfFFdf', '#aaFF99', '#FFFFbb',
+        '#33FFFF', '#CCCCFF', '#Faa9a9',
+        '#CCFFaa'
+      ]
+      let colorIndex = 0
+      
+      function setPastelBackground(elmt) {
+        elmt.style.backgroundColor = pastelColors[colorIndex]
+        colorIndex++
+        if (colorIndex >= pastelColors.length) {
+          colorIndex = 0
+        }
+      }
+      
       function chatInputChanged() {
         sendTyping(chatSocket)
       }
       
       function sendChatMessage() {
         sendMessage(chatSocket)
+      }
+      
+      function addFeedbackItem(item) {
+        const container = document.createElement('div')
+        container.className = 'feedback-card'
+        setPastelBackground(container)
+        const content = document.createElement('p')
+        content.textContent = item.feedback
+        const name = document.createElement('p')
+        name.textContent = '- ' + item.name
+        container.appendChild(content)
+        container.appendChild(name)
+        const board = document.getElementById('feedback-board')
+        board.insertBefore(container, board.firstChild)
+      }
+      
+      function submitFeedback() {
+        const feedback = document.getElementById('feedback-input').value
+        if (feedback) {
+          document.getElementById('feedback-btn-submit').textContent = 'Please wait...'
+          const nameInput = document.getElementById('feedback-name')
+          const name = nameInput.value || 'Anonymous'
+          const body = { feedback, name }
+          fetch('/discussion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          })
+          .then(_ => {
+            document.getElementById('feedback-btn-submit').textContent = 'Submit'
+            document.getElementById('feedback-input').value = ''
+            document.getElementById('feedback-name').value = ''
+            document.getElementById('feedback-success-alert').style.display = 'block'
+            setTimeout(function() {
+              document.getElementById('feedback-success-alert').style.display = 'none'
+            }, 3000)
+            window.scrollTo(0, 0)
+            addFeedbackItem(body)
+          })
+        }
+      }
+      
+      function fetchFeedback() {
+        fetch('/discussion')
+        .then(res => res.json())
+        .then(feedback => {
+          for (let item of feedback) {
+            addFeedbackItem(item)
+          }
+        })
       }
       
       const animals = ['Tiger', 'Hippo', 'Rhino', 'Lion', 'Fox', 'Leopard', 'Raccoon', 'Panda', 'Shark']
@@ -169,30 +248,12 @@
         }
       }
       
-      const pastelColors = [
-        '#FFbbee',
-        '#99FFFF',
-        '#CC99FF',
-        '#dfFFdf',
-        '#aaFF99',
-        '#FFFFbb',
-        '#33FFFF',
-        '#CCCCFF',
-        '#Faa9a9',
-        '#CCFFaa'
-      ]
-      let colorIndex = 0
-      
       async function fetchData(name, onDatum) {
         const response = await fetch('/' + name)
         const data = await response.json()
         const elements = [...document.querySelectorAll('.' + name)]
         elements.forEach((elmt, i) => {
-          elmt.style.backgroundColor = pastelColors[colorIndex]
-          colorIndex++
-          if (colorIndex >= pastelColors.length) {
-            colorIndex = 0
-          }
+          setPastelBackground(elmt)
           onDatum(elmt, data[i])
         })
       }
@@ -227,6 +288,7 @@
         //localStorage.removeItem('username')
         getFeedResults()
         getGoodNews()
+        fetchFeedback()
         
         let hash = window.location.hash;
         setInterval(function(){

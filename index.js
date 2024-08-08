@@ -104,6 +104,10 @@ function sendAiMessage(prompt, aiIndex) {
   if (process.env.TEST) {
     msg.payload = '[TEST] Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
     msg.when = new Date()
+    setTimeout(function() {
+      io.emit('message', msg)
+      chatHistory.push(msg)
+    }, 2000)
   } else {
     getGeminiOutput(prompt, models[aiIndex])
     .then(reply => {
@@ -267,6 +271,38 @@ app.get('/feed', (req, res) => {
     res.send(feed).end()
   })
 });
+
+function fetchFeedback(onFeedback) {
+  const options = { parseJSON: true }
+  pantryClient.basket
+    .get('UserFeedback', options)
+    .then((contents) => {
+      console.log(contents)
+      onFeedback(contents.feedback)
+    })
+}
+
+app.get('/discussion', (req, res) => {
+  fetchFeedback(feedback => {
+    res.send(feedback).end()
+  })
+})
+
+app.post('/discussion', (req, res) => {
+  fetchFeedback(feedback => {
+    if (req.body.feedback && req.body.name) {
+      feedback.push(req.body)
+    }
+    const options = { parseJSON: true } 
+    const payload = { feedback }
+    pantryClient.basket
+      .create('UserFeedback', payload, options)
+      .then((response) => {
+        console.log(response)
+        res.sendStatus(200).end()
+      })
+  })
+})
 
 app.get('/query', (req, res) => {
   const sql = `

@@ -206,3 +206,67 @@ body {
   padding: 1vw;
   border: 0.25vw solid #ddd;
 }
+
+#discussion-board {
+  font-size: 4vw;
+}
+
+#discussion-board-desc {
+  margin-left: 2vw;
+}
+
+#feedback-input-group label,
+#feedback-input-group textarea {
+  font-size: 5vw;
+}
+
+#feedback-name-group label,
+#feedback-name-group input {
+  font-size: 6vw;
+}
+
+.feedback-input-group {
+  padding-left: 2vw;
+  margin-bottom: 2vw;
+}
+
+.feedback-input-group label {
+  font-weight: bold;
+}
+
+.feedback-input {
+  width: 90vw;
+  margin: 2vw 2vw 2vw 0;
+  padding: 2vw;
+  font-size: 6vw;
+  border: 0.25vw solid #ccc;
+}
+
+#feedback-btn-submit {
+  font-size: 8vw;
+  padding: 2vw;
+  margin-left: 2vw;
+}
+
+#feedback-board {
+  border-top: 0.5vw solid #ccc;
+}
+
+#feedback-success-alert {
+  display: none;
+  background-color: #99ff99;
+  border: 0.25vw solid #66cc66;
+  border-radius: 0.5vw;
+  font-size: 6vw;
+  margin: 2vw;
+  padding: 2vw;
+  position: fixed;
+  top: 0;
+}
+
+.feedback-card {
+  margin: 2vw;
+  margin-bottom: 0;
+  padding: 2vw;
+  font-size: 4vw;
+}
