@@ -1,6 +1,5 @@
 const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
 const { XMLParser } = require("fast-xml-parser");
-const { v4: uuid } = require('uuid')
 const express = require('express')
 const mysql = require('mysql2/promise')
 const fs = require("fs");
