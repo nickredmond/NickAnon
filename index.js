@@ -97,18 +97,22 @@ async function getGeminiOutput(prompt, model) {
 }
 
 function sendAiMessage(prompt, aiIndex) {
-  getGeminiOutput(prompt, models[aiIndex])
-  .then(reply => {
-    const msg = {
-      userId: aiUserIds[aiIndex],
-      username: aiUsernames[aiIndex],
-      when: new Date(),
-     //payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
-      payload: reply
-    }
-    io.emit('message', msg)
-    chatHistory.push(msg)
-  })
+  const msg = {
+    userId: aiUserIds[aiIndex],
+    username: aiUsernames[aiIndex]
+  }
+  if (process.env.TEST) {
+    msg.payload = '[TEST] Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
+    msg.when = new Date()
+  } else {
+    getGeminiOutput(prompt, models[aiIndex])
+    .then(reply => {
+      msg.payload = reply
+      msg.when = new Date()
+      io.emit('message', msg)
+      chatHistory.push(msg)
+    })
+  }
 }
 
 function introduceAi(aiIndex) {
@@ -187,19 +191,30 @@ io.on('connection', (socket) => {
 let lastRefreshTime = new Date()
 let goodNewsArticles = [];
 async function getGoodNewsFeed() {
-  lastRefreshTime = new Date()
-  console.log('INFO: Fetching news articles from GNN.')
-  const response = await fetch('https://www.goodnewsnetwork.org/feed')
-  const text = await response.text()
-  const parser = new XMLParser();
-  const gnnFeed = parser.parse(text)
-  let updatedArticles = []
-  gnnFeed.rss.channel.item.forEach(article => {
-    if (!article.title.toLowerCase().includes('good news in history')) {
-      updatedArticles.push(article)
+  if (process.env.TEST) {
+    for (let i = 1; i <= 10; i++) {
+      goodNewsArticles.push({
+        title: '[TEST] This is a fake article',
+        link: 'https://goodnewsnetwork.org',
+        pubDate: 'Sun, Aug 09 2024',
+        description: '<p>This is a placeholder description and means nothing.</p>'
+      })
     }
-  })
-  goodNewsArticles = updatedArticles
+  } else {
+    lastRefreshTime = new Date()
+    console.log('INFO: Fetching news articles from GNN.')
+    const response = await fetch('https://www.goodnewsnetwork.org/feed')
+    const text = await response.text()
+    const parser = new XMLParser();
+    const gnnFeed = parser.parse(text)
+    let updatedArticles = []
+    gnnFeed.rss.channel.item.forEach(article => {
+      if (!article.title.toLowerCase().includes('good news in history')) {
+        updatedArticles.push(article)
+      }
+    })
+    goodNewsArticles = updatedArticles
+  }
 }
 
 function isRefreshDue() {
@@ -269,6 +284,10 @@ app.get('/', (req, res) => {
 
 /** Initial request from GNN's RSS feed (XML). */
 getGoodNewsFeed()
+
+if (process.env.TEST) {
+  console.log('WARNING: The app is currently in TEST mode, which means no requests will be made for external data.')
+}
 
 server.listen(port, () => {
     console.log(`app listening on port ${port}`)

@@ -162,6 +162,11 @@
         document.getElementById(currentViewId).style.display = 'block'
         document.getElementById('section-heading').style.display = 'block'
         document.getElementById('section-title').textContent = title
+        window.location.hash = '#' + currentViewId
+        if (currentViewId === 'ai-chat') {
+          const conversation = document.getElementById('chat-messages')
+          window.scrollTo(0, conversation.offsetHeight)
+        }
       }
       
       const pastelColors = [
@@ -223,15 +228,21 @@
         getFeedResults()
         getGoodNews()
         
+        let hash = window.location.hash;
+        setInterval(function(){
+          if (window.location.hash != hash) {
+              hash = window.location.hash;
+              if (!hash) {
+                goBack()
+              }
+          }
+        }, 100);
+        
         const username = localStorage.getItem('username')
         if (!username) {
           document.getElementById('dialog-overlay').style.display = 'block'
           document.getElementById('welcome-dialog').setAttribute('open', true)
         }
-        
-        setInterval(function() {
-          getFeedResults()
-        }, 300000)
       })
     </script>
   </body>
