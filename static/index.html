@@ -3,6 +3,7 @@
     <title>NickAnon</title>
     <link rel="stylesheet" href="/index.css">
     <link rel="stylesheet" href="/ai-chat.css">
+    <script src="/timeago.js"></script>
     <script src="/ai-chat.js"></script>
     <script src="/socket.io/socket.io.js"></script>
   </head>
@@ -95,14 +96,32 @@
         sendMessage(chatSocket)
       }
       
+      const animals = ['Tiger', 'Hippo', 'Rhino', 'Lion', 'Fox', 'Leopard', 'Raccoon', 'Panda', 'Shark']
+      function randomUsername() {
+        const animal = animals[Math.floor(Math.random()*animals.length)]
+        const number = Math.floor(Math.random()*100)
+        return `Anonymous ${animal} ${number}`
+      }
+      
+      function setUser(username) {
+        localStorage.setItem('username', username)
+        const userId = self?.crypto?.randomUUID() ?? Math.floor(Math.random()*10000)
+        localStorage.setItem('userId', userId)
+      }
+      
       function saveUsername() {
-        const username = document.getElementById('username').value
-        localStorage.setItem('username', username || 'Anonymous')
+        dialogClosed()
+        let username = document.getElementById('username').value
+        if (!username) {
+          username = randomUsername()
+        }
+        setUser(username)
       }
       
       function dismissUsername() {
         dialogClosed()
-        localStorage.setItem('username', 'Anonymous')
+        const username = randomUsername()
+        setUser(username)
       }
       
       let currentViewId;
@@ -113,10 +132,19 @@
         document.getElementById('question-input').value = ''
       }
       
+      let needsChatHistory = true
       function setCurrentView(id, title) {
         currentViewId = id
         if (!chatSocket && currentViewId === 'ai-chat') {
           chatSocket = io()
+          chatSocket.on('history', function(history) {
+            if (needsChatHistory) { 
+              needsChatHistory = false
+              for (let msg of history) {
+                receiveMessage(msg, true)
+              }
+            }
+          })
           chatSocket.on('typing', function(msg) {
             setTyping(msg)
           })
@@ -186,6 +214,7 @@
       }
       
       document.addEventListener("DOMContentLoaded", _ => {
+        //localStorage.removeItem('username')
         getFeedResults()
         getGoodNews()
         

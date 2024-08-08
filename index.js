@@ -20,21 +20,24 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 let chatHistory = [];
+console.log('INFO: preparing to fetch chat history.')
 const pantryClient = new pantry(process.env.PANTRY_KEY)
 const options = { parseJSON: true }
 pantryClient.basket
   .get('ChatMessages', options)
   .then((contents) => {
+    console.log(contents)
     chatHistory = contents.last10
   })
 
 setInterval(function() {
+  console.log('INFO: Preparing to update chat history.')
   const last10 = chatHistory.slice(chatHistory.length-10)
   chatHistory = last10
   const options = { parseJSON: true } 
   const payload = { last10 }
   pantryClient.basket
-    .update('ChatMessages', payload, options)
+    .create('ChatMessages', payload, options)
     .then((response) => console.log(response))
 }, process.env.CHAT_BACKUP_INTERVAL)
 
@@ -83,26 +86,32 @@ async function getGeminiOutput(prompt, model) {
 }
 
 function sendAiMessage(prompt, aiIndex) {
-  getGeminiOutput(prompt, models[aiIndex])
-  .then(reply => {
-    io.emit('message', {
+  //getGeminiOutput(prompt, models[aiIndex])
+  //.then(reply => {
+    const msg = {
       userId: '123',
       username: aiUsernames[aiIndex],
-   //  payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
-      payload: reply
-    })
-  })
+      when: new Date(),
+     payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
+     // payload: reply
+    }
+    io.emit('message', msg)
+    chatHistory.push(msg)
+ // })
 }
 
 let activeUserCount = 0
 let messagesSinceReprompt = -1
 
 io.on('connection', (socket) => {
+  console.log('INFO: user connected to chat.')
   activeUserCount++
   //todo: emit active user count
   for (let msg of chatHistory) {
-    socket.emit('message', msg)
+    msg.ago = new Date() - new Date(msg.when)
   }
+  io.emit('history', chatHistory)
+  
   const aiIntroIndex = Math.floor(Math.random() * models.length)
   setTimeout(function() {
     io.emit('typing', {
@@ -112,7 +121,9 @@ io.on('connection', (socket) => {
   }, 100)
   const introPrompt = `${aiContexts[aiIntroIndex]} Introduce yourself to someone who just joined the meeting.`
   sendAiMessage(introPrompt, aiIntroIndex)
+  
   socket.on('message', (msg) => {
+    msg.when = new Date()
     io.emit('message', msg);
     chatHistory.push(msg)
     const aiIndex = Math.floor(Math.random() * models.length)
@@ -124,14 +135,18 @@ io.on('connection', (socket) => {
     }
     messagesSinceReprompt++
   });
+  
   socket.on('disconnect', () => {
     activeUserCount--
+    console.log('INFO: user disconnected from chat.')
   });
 });
 
 let lastRefreshTime = new Date()
 let goodNewsArticles = [];
 async function getGoodNewsFeed() {
+  return;
+  
   lastRefreshTime = new Date()
   console.log('INFO: Fetching news articles from GNN.')
   const response = await fetch('https://www.goodnewsnetwork.org/feed')
@@ -155,6 +170,7 @@ function isRefreshDue() {
 }
 
 app.get('/gnn', (req, res) => {
+  console.log('INFO: request begin for /gnn')
   if (isRefreshDue()) {
     getGoodNewsFeed()
     .then(_ => {
@@ -187,6 +203,7 @@ async function queryDb(sql, params) {
 }
 
 app.get('/feed', (req, res) => {
+  console.log('INFO: preparing to query /feed')
   const sql = `
     select * from feedItems
     order by RAND()

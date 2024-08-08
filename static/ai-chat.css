@@ -13,8 +13,15 @@
   margin-bottom: 2vw;
 }
 
-.msg-meta {
+.msg-name {
   font-weight: bold;
+  margin-bottom: 1vw;
+}
+
+.msg-time {
+  font-weight: bold;
+  color: #666;
+  margin-top: 0;
 }
 
 .msg-contents {
