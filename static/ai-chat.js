@@ -48,7 +48,7 @@ function sendTyping(socket) {
     socket.emit('typing', {username,userId})
     setTimeout(function() {
       canSendTyping = true
-    }, 1000)
+    }, 2000)
   }
 }
 
@@ -87,7 +87,7 @@ function setTyping(msg) {
     window.scrollTo(0, conversation.offsetHeight + 40)
     setTimeout(function() {
       document.getElementById('typing-indicator').style.display = 'none'
-    }, 2000)
+    }, 2500)
   }
 }
 

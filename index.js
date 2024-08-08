@@ -67,17 +67,28 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
 // maybe take turns with AIs?
 
 const models = [
-  // dad
-//  genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings }),
-  // therapist in recovery
-//  genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings }),
+  // dad w/ addicted family
+  genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings }),
+  // therapist in long-term recovery
+  genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings }),
   // young woman in early recovery
   genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings })
 ]
 const aiContexts = [
-  'Context: You are a middle-aged father named Danny. You are from rural Arkansas. You have a teenaged son who is battling addiction. You are currently in an online recovery meeting for support and to see if you can find useful info to help your son.'
+  'Context: You are a middle-aged father named Danny. You are from rural Arkansas. You have a teenaged son who is battling addiction to alcohol. You are currently in an online recovery meeting for support and to see if you can find useful info to help your son.',
+  'Context: You are a licensed therapist named Brad. You have been clean from meth for 8 years, and you go out of your way to help people recover from substance abuse. You are friendly and down-to-earth, and you will also tell people what they need to hear. You are currently in an online recovery meeting to see if you can help anyone.',
+  'Context: You are a young woman named Tiffany. You are newly sober after a long period of abusing alcohol. You need all the support you can get, and you are also able to show kindness to the people around. You just found an online recovery meeting and have joined the meeting to seek friendship.'
 ]
-const aiUsernames = ['Danny (AI)']
+const aiUsernames = [
+  'Danny (AI)',
+  'Brad (AI)',
+  'Tiffany (AI)'
+]
+const aiUserIds = [
+  'ai_danny',
+  'ai_brad',
+  'ai_tiffany'
+]
 
 async function getGeminiOutput(prompt, model) {
   const result = await model.generateContent(prompt);
@@ -89,7 +100,7 @@ function sendAiMessage(prompt, aiIndex) {
   getGeminiOutput(prompt, models[aiIndex])
   .then(reply => {
     const msg = {
-      userId: '123',
+      userId: aiUserIds[aiIndex],
       username: aiUsernames[aiIndex],
       when: new Date(),
      //payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
@@ -100,8 +111,34 @@ function sendAiMessage(prompt, aiIndex) {
   })
 }
 
+function introduceAi(aiIndex) {
+  io.emit('typing', {
+    userId: aiUserIds[aiIndex],
+    username: aiUsernames[aiIndex]
+  })
+  const introPrompt = `${aiContexts[aiIndex]} Introduce yourself to someone who just joined the meeting.`
+  sendAiMessage(introPrompt, aiIndex)
+}
+
+function introduceAllAi() {
+  const aiIntroIndex = Math.floor(Math.random() * models.length)
+  let currentIndex = aiIntroIndex
+  let timeout = 500
+  do {
+    setTimeout(
+      introduceAi.bind(null, currentIndex)
+    , timeout)
+    timeout += 15000
+    currentIndex++
+    if (currentIndex >= models.length) {
+      currentIndex = 0
+    }
+  } while (currentIndex !== aiIntroIndex)
+}
+
 let activeUserCount = 0
-let messagesSinceReprompt = -1
+let messagesSinceReprompt = [-1, -1, -1]
+let isIntroducingAi = false
 
 io.on('connection', (socket) => {
   console.log('INFO: user connected to chat.')
@@ -112,28 +149,33 @@ io.on('connection', (socket) => {
   }
   io.emit('history', chatHistory)
   
-  const aiIntroIndex = Math.floor(Math.random() * models.length)
-  setTimeout(function() {
-    io.emit('typing', {
-      userId: '123',
-      username: aiUsernames[aiIntroIndex]
-    })
-  }, 100)
-  const introPrompt = `${aiContexts[aiIntroIndex]} Introduce yourself to someone who just joined the meeting.`
-  sendAiMessage(introPrompt, aiIntroIndex)
+  if (!isIntroducingAi) {
+    isIntroducingAi = true
+    introduceAllAi()
+    setTimeout(function() {
+      isIntroducingAi = false
+    }, 60000)
+  }
   
   socket.on('message', (msg) => {
     msg.when = new Date()
     io.emit('message', msg);
     chatHistory.push(msg)
-    const aiIndex = Math.floor(Math.random() * models.length)
-    const needsReprompt = messagesSinceReprompt >= process.env.AI_REPROMPT_COUNT || messagesSinceReprompt < 0
-    const prompt = needsReprompt ? `${aiContexts[aiIndex]} Someone just spoke at the meeting and said: ${msg.payload}` : `Person named ${msg.username} just said: ${msg.payload}`
-    sendAiMessage(prompt, aiIndex)
-    if (needsReprompt) {
-      messagesSinceReprompt = 0
+    const isSendingAiMsg = activeUserCount < 2 ? true : Math.random() > 0.5
+    if (isSendingAiMsg) {
+      const aiIndex = Math.floor(Math.random() * models.length)
+      const needsReprompt = messagesSinceReprompt[aiIndex] >= process.env.AI_REPROMPT_COUNT || messagesSinceReprompt[aiIndex] < 0
+      const prompt = needsReprompt ? `${aiContexts[aiIndex]} Someone just spoke at the meeting and said: ${msg.payload}` : `Person named ${msg.username} just said: ${msg.payload}`
+      sendAiMessage(prompt, aiIndex)
+      if (needsReprompt) {
+        messagesSinceReprompt[aiIndex] = 0
+      }
+      messagesSinceReprompt[aiIndex] += 1
     }
-    messagesSinceReprompt++
+  });
+  
+  socket.on('typing', (usr) => {
+    io.emit('typing', usr)
   });
   
   socket.on('disconnect', () => {
