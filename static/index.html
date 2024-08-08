@@ -48,6 +48,9 @@
       <div class="feed"><p></p></div>
       <div class="feed"><p></p></div>
       <div class="feed"><p></p></div>
+      <div>
+        <button id="btn-refresh-feed" onclick="refreshFeed()">Refresh<span>&#8634;</span></button>
+      </div>
     </div>
     
     <div id="gnn-feed">
@@ -279,6 +282,18 @@
           const summary = element.querySelector('p')
           const descHalf = article.description.split('</p>')[0]
           summary.innerHTML = descHalf.split('<p>')[1]
+        })
+      }
+      
+      function refreshFeed() {
+        const refreshBtn = document.getElementById('btn-refresh-feed')
+        refreshBtn.innerHTML = 'Refreshing...'
+        fetchData('feed', (element, result) => {
+          element.querySelector('p').innerHTML = result.content
+        })
+        .then(_ => {
+          refreshBtn.innerHTML = `Refresh<span>&refresh;</span>`
+          document.getElementById("page-heading").scrollIntoView()
         })
       }
       

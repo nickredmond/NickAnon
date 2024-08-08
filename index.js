@@ -20,6 +20,12 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 let chatHistory = [];
+let needsChatBackup = false 
+function addChatHistory(msg) {
+  chatHistory.push(msg)
+  needsChatBackup = true
+}
+
 console.log('INFO: preparing to fetch chat history.')
 const pantryClient = new pantry(process.env.PANTRY_KEY)
 const options = { parseJSON: true }
@@ -31,14 +37,19 @@ pantryClient.basket
   })
 
 setInterval(function() {
-  console.log('INFO: Preparing to update chat history.')
-  const last10 = chatHistory.slice(chatHistory.length-10)
-  chatHistory = last10
-  const options = { parseJSON: true } 
-  const payload = { last10 }
-  pantryClient.basket
-    .create('ChatMessages', payload, options)
-    .then((response) => console.log(response))
+  if (needsChatBackup) {
+    needsChatBackup = false
+    console.log('INFO: Preparing to back up chat history.')
+    const last10 = chatHistory.slice(chatHistory.length-10)
+    chatHistory = last10
+    const options = { parseJSON: true } 
+    const payload = { last10 }
+    pantryClient.basket
+      .create('ChatMessages', payload, options)
+      .then((response) => console.log(response))
+  } else {
+    console.log(`INFO: no chat messages in ${process.env.CHAT_BACKUP_INTERVAL}ms. skipping backup.`)
+  }
 }, process.env.CHAT_BACKUP_INTERVAL)
 
 const safetySettings = [
@@ -106,7 +117,7 @@ function sendAiMessage(prompt, aiIndex) {
     msg.when = new Date()
     setTimeout(function() {
       io.emit('message', msg)
-      chatHistory.push(msg)
+      addChatHistory(msg)
     }, 2000)
   } else {
     getGeminiOutput(prompt, models[aiIndex])
@@ -114,7 +125,7 @@ function sendAiMessage(prompt, aiIndex) {
       msg.payload = reply
       msg.when = new Date()
       io.emit('message', msg)
-      chatHistory.push(msg)
+      addChatHistory(msg)
     })
   }
 }
@@ -168,7 +179,7 @@ io.on('connection', (socket) => {
   socket.on('message', (msg) => {
     msg.when = new Date()
     io.emit('message', msg);
-    chatHistory.push(msg)
+    addChatHistory(msg)
     const isSendingAiMsg = activeUserCount < 2 ? true : Math.random() > 0.5
     if (isSendingAiMsg) {
       const aiIndex = Math.floor(Math.random() * models.length)

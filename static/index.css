@@ -270,3 +270,19 @@ body {
   padding: 2vw;
   font-size: 4vw;
 }
+
+#btn-refresh-feed {
+  width: 95%;
+  margin: 2vw;
+  padding: 2vw;
+  background-color: #000088;
+  color: #fff;
+  border: 1px solid #000055;
+  font-size: 6vw;
+}
+
+#btn-refresh-feed span {
+  font-size: 8vw;
+  font-weight: bold;
+  padding-left: 3vw;
+}
