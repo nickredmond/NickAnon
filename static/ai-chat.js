@@ -30,6 +30,7 @@ function sendMessage(socket) {
   const payload = input.value
   if (payload) {
     input.value = ''
+    input.style.height = '15vw'
     const username = localStorage.getItem('username')
     const userId = localStorage.getItem('userId')
     const message = {username,userId,payload}
@@ -69,6 +70,10 @@ function getCurrentTime() {
   return `${hours}:${minutes}${ampm}`
 }
 
+function resetChat() {
+  document.getElementById('chat-messages').innerHTML = ''
+}
+
 function receiveMessage(msg, isHistory) {
   const userId = localStorage.getItem('userId')
   const isSelf = msg.userId === userId
@@ -102,4 +107,12 @@ function startMsgTimeUpdateLoop() {
       time.textContent = updatedTime
     }
   }, 10000)
+}
+
+function initChatView() {
+  const textarea = document.getElementById('chat-input')
+  textarea.oninput = function() {
+    textarea.style.height = ""; /* Reset the height*/
+    textarea.style.height = textarea.scrollHeight + "px";
+  };
 }

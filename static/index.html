@@ -229,6 +229,7 @@
           chatSocket.on('history', function(history) {
             if (needsChatHistory) { 
               needsChatHistory = false
+              resetChat()
               for (let msg of history) {
                 receiveMessage(msg, true)
               }
@@ -241,6 +242,14 @@
           chatSocket.on('message', function(msg) {
             receiveMessage(msg)
           })
+          chatSocket.on('disconnect', () => {
+            needsChatHistory = true
+            chatSocket = io({
+              query: {
+                userId: localStorage.getItem('userId')
+              }
+            });
+          });
         }
         document.getElementById('main-menu').style.display = 'none'
         document.getElementById('footer').style.display = 'none'
@@ -309,6 +318,7 @@
         getFeedResults()
         getGoodNews()
         fetchFeedback()
+        initChatView()
         
         let hash = window.location.hash;
         setInterval(function(){
