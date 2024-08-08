@@ -222,7 +222,10 @@
       function setCurrentView(id, title) {
         currentViewId = id
         if (!chatSocket && currentViewId === 'ai-chat') {
-          chatSocket = io()
+          const userId = localStorage.getItem('userId')
+          chatSocket = io({
+            query: {userId}
+          });
           chatSocket.on('history', function(history) {
             if (needsChatHistory) { 
               needsChatHistory = false

@@ -71,10 +71,6 @@ const safetySettings = [
 ];
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
-// todo: have several of these 
-// feed initial prompts 
-// then feed user chats as prompts 
-// maybe take turns with AIs?
 
 const models = [
   // dad w/ addicted family
@@ -157,9 +153,31 @@ function introduceAllAi() {
 let activeUserCount = 0
 let messagesSinceReprompt = [-1, -1, -1]
 let isIntroducingAi = false
+let connectedUserIds = []
+
+/** Implemented to prevent AI from spamming 
+    chat during unstable socket connection. */
+function isNewChatUser(userId) {
+  let isNewUser = false
+  if (userId) {
+    console.log('INFO: user connected to chat. userId: ' + userId)
+    isNewUser = !connectedUserIds.includes(userId)
+    if (isNewUser) {
+      connectedUserIds.push(userId)
+    }
+  } else {
+    console.log('WARNING: user connected to chat without providing userId.')
+  }
+  if (connectedUserIds.length > 1000) {
+    console.log('WARNING: excessive amount of connectedUserIds.')
+  }
+  return isNewUser
+}
 
 io.on('connection', (socket) => {
-  console.log('INFO: user connected to chat.')
+  const userId = socket.handshake.query.userId
+  const isNewUser = isNewChatUser(userId)
+  
   activeUserCount++
   //todo: emit active user count
   for (let msg of chatHistory) {
@@ -167,12 +185,12 @@ io.on('connection', (socket) => {
   }
   io.emit('history', chatHistory)
   
-  if (!isIntroducingAi) {
+  if (isNewUser && !isIntroducingAi) {
     isIntroducingAi = true
     introduceAllAi()
     setTimeout(function() {
       isIntroducingAi = false
-    }, 60000)
+    }, 120000)
   }
   
   socket.on('message', (msg) => {
