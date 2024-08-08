@@ -31,7 +31,7 @@
         <span id="typing-username"></span>&nbsp;is typing...
       </div>
       <div id="chat-form">
-        <textarea id="chat-input" rows="2" placeholder="Say something..."></textarea>
+        <textarea id="chat-input" rows="3" placeholder="Say something..."></textarea>
         <button id="chat-btn-send" type="button" onclick="sendChatMessage()">Send</button>
       </div>
       <!--<p id="ai-disclaimer"><strong>DISCLAIMER:&nbsp;</strong>Chat in real-time with people 24/7 where the emphasis is addiction recovery. Keep in mind, this app includes chat-bots that are powered by artificial intelligence (AI) to help keep conversation going. Please use caution, since AI isn't professionally trained or self-aware.</p>-->
@@ -143,6 +143,7 @@
               for (let msg of history) {
                 receiveMessage(msg, true)
               }
+              startMsgTimeUpdateLoop()
             }
           })
           chatSocket.on('typing', function(msg) {

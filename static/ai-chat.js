@@ -12,6 +12,8 @@ function addMessageBubble(msg, isSelf) {
   const timeField = document.createElement('p')
   timeField.className = 'msg-time'
   timeField.textContent = when
+  timeField.setAttribute('ago', ago)
+  timeField.setAttribute('when', new Date())
   const contents = document.createElement('p')
   contents.className = 'msg-contents'
   contents.textContent = msg.payload
@@ -87,4 +89,17 @@ function setTyping(msg) {
       document.getElementById('typing-indicator').style.display = 'none'
     }, 2000)
   }
+}
+
+function startMsgTimeUpdateLoop() {
+  setInterval(function() {
+    const msgTimes = [...document.querySelectorAll('.msg-time')]
+    for (time of msgTimes) {
+      const lastAgo = Number(time.getAttribute('ago'))
+      const when = new Date(time.getAttribute('when'))
+      const ago = (new Date() - when) + lastAgo 
+      const updatedTime = timeago(ago)
+      time.textContent = updatedTime
+    }
+  }, 10000)
 }

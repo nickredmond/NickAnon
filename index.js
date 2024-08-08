@@ -86,18 +86,18 @@ async function getGeminiOutput(prompt, model) {
 }
 
 function sendAiMessage(prompt, aiIndex) {
-  //getGeminiOutput(prompt, models[aiIndex])
-  //.then(reply => {
+  getGeminiOutput(prompt, models[aiIndex])
+  .then(reply => {
     const msg = {
       userId: '123',
       username: aiUsernames[aiIndex],
       when: new Date(),
-     payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
-     // payload: reply
+     //payload: 'Howdy, partner. This is just a placeholder so you dont exceed your limit for the free version of Gemini'
+      payload: reply
     }
     io.emit('message', msg)
     chatHistory.push(msg)
- // })
+  })
 }
 
 let activeUserCount = 0
@@ -145,8 +145,6 @@ io.on('connection', (socket) => {
 let lastRefreshTime = new Date()
 let goodNewsArticles = [];
 async function getGoodNewsFeed() {
-  return;
-  
   lastRefreshTime = new Date()
   console.log('INFO: Fetching news articles from GNN.')
   const response = await fetch('https://www.goodnewsnetwork.org/feed')
@@ -227,6 +225,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/static/index.html'));
 });
 
+/** Initial request from GNN's RSS feed (XML). */
 getGoodNewsFeed()
 
 server.listen(port, () => {

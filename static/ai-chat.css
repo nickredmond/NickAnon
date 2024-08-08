@@ -49,8 +49,13 @@
 
 #chat-input {
   flex: 1;
-  font-size: 4vw;
   outline: 0.25vw solid #ccc;
+  font: 4vw sans-serif;
+  height: 15vw;
+}
+
+#chat-input::placeholder {
+    font: 6vw sans-serif;
 }
 
 #chat-btn-send {
